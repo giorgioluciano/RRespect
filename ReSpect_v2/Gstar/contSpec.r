@@ -1,4 +1,4 @@
-%# Function: contSpec
+# Function: contSpec
 #
 # Using a simplified L-curve method to compute the continuous relaxation 
 # spectra H(s) given G*(w) from an input file

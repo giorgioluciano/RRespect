@@ -7,10 +7,10 @@ SetParameters <- function() {
   #=====================================#
   
   # Printing to screen and files is ON (=1) or OFF (0)
-  par$verbose <- 1
+  par$verbose <- 0
   
   # Plotting functions are ON (=1) or OFF (0)
-  par$plotting <- 1
+  par$plotting <- 0
   
   #=======================================#
   # C O N T I N U O U S   S P E C T R U M #

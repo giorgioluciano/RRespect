@@ -23,7 +23,7 @@ GetExpData <- function(fname) {
   Gppo <- unique_data[, 3]
   
   # Space it evenly on a log scale
-  w <- logspace(log10(min(wo)), log10(max(wo)), length(wo))
+  w <-  10^seq(log10(min(wo)), log10(max(wo)), length.out = length(wo))
   Gp <- approx(wo, Gpo, xout = w, method = "linear", rule = 2)$y
   Gpp <- approx(wo, Gppo, xout = w, method = "linear", rule = 2)$y
   
@@ -37,16 +37,12 @@ GetExpData <- function(fname) {
   return(list(w = w, Gexp = Gexp))
 }
 
-# Helper function to create a logarithmically spaced vector
-logspace <- function(d1, d2, n) {
-  exp(seq(log(d1), log(d2), length.out = n))
-}
 
 # Example usage
-fname <- "Gst.dat"  # replace with your actual file path
-result <- GetExpData(fname)
-w <- result$w
-Gexp <- result$Gexp
+#fname <- "Gst.dat"  # replace with your actual file path
+#result <- GetExpData(fname)
+#w <- result$w
+#Gexp <- result$Gexp
 
-print(w)
-print(Gexp)
+#print(w)
+#print(Gexp)

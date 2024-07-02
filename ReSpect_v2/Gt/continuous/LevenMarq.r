@@ -1,4 +1,4 @@
-%# Function LevenMarq
+# Function LevenMarq
 #
 # Purpose: Given a lambda, this function finds the H_lambda(s) that minimizes V(lambda)
 #

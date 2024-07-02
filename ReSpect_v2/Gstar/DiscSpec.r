@@ -34,26 +34,26 @@ discSpec <- function(par = NULL) {
   if (is.null(par)) {
     par <- SetParameters()  # Load in global settings
   }
-
+  
   if (par$verbose) {
-    cat("\n(*) Start\n(*) Loading Data Files: ...")
+    cat("\n(*) Start\n(*) Loading Data Files: ...\n")
   }
-
+  
   data <- ReadData(par$GstFile, 'output/H.dat')
   w <- data$w
   Gp <- data$Gp
   Gpp <- data$Gpp
   s <- data$s
   H <- data$H
-
+  
   n <- length(w)
   ns <- length(s)
-
+  
   # Find the distribution of nodes you need
   wt <- GetWeights(H, w, s)
   wt <- wt / trapz(log(s), wt)
   wt <- (1 - par$BaseDistWt) * wt + (par$BaseDistWt * mean(wt)) * rep(1, length(wt))
-
+  
   # Try different N: number of Maxwell modes
   Nmax <- min(floor(3 * log(max(w) / min(w))), n / 4)
   Nmin <- max(floor(0.5 * log10(max(w) / min(w))), 3)
@@ -61,7 +61,7 @@ discSpec <- function(par = NULL) {
   Nv <- Nmin:Nmax
   ev <- numeric(length(Nv))
   condN <- numeric(length(Nv))
-
+  
   for (i in 1:length(Nv)) {
     N <- Nv[i]
     grid <- GridDensity(log(s), wt, N)
@@ -73,7 +73,7 @@ discSpec <- function(par = NULL) {
     ev[i] <- maxwell_modes$error
     condN[i] <- maxwell_modes$cond
   }
-
+  
   # Use supplied number of modes or
   if (par$Nopt > 0) {
     Nopt <- par$Nopt
@@ -89,7 +89,7 @@ discSpec <- function(par = NULL) {
       cat(sprintf("\n(*) Number of optimum nodes = %d\n", Nopt))
     }
   }
-
+  
   # Send the best data-set stats
   grid <- GridDensity(log(s), wt, Nopt)
   z <- grid$z
@@ -98,7 +98,7 @@ discSpec <- function(par = NULL) {
   g <- maxwell_modes$g
   tau <- maxwell_modes$tau
   error <- maxwell_modes$error
-
+  
   # Some Plotting
   if (par$plotting) {
     par(mfrow = c(2, 1))
@@ -124,9 +124,9 @@ discSpec <- function(par = NULL) {
     # loglog(w,K[n+1:2*n],'r-','LineWidth',2);
     xlabel('w')
     ylabel('G*')
-    hold off
+    # hold off
   }
-
+  
   # Some Printing
   if (par$verbose) {
     f1 <- file('output/dmodes.dat', 'w')
@@ -156,7 +156,7 @@ discSpec <- function(par = NULL) {
     }
     close(f3)
   }
-
+  
   return(list(Nopt = Nopt, g = g, tau = tau, error = error))
 }
 

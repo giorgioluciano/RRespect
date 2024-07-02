@@ -62,26 +62,24 @@ GetResidualJacobian <- function(pf, L, Gst, H, w, s) {
   Jr <- matrix(0, 2 * n + nl, ns)
   
   kernel_values <- kernel(H, w, s)
-  r[1:2 * n] <- (1 - kernel_values / Gst) / sqrt(n)
-  r[2 * n + 1:2 * n + nl] <- pf * diff(H, differences = 2) / sqrt(nl)
+  r[1:(2 * n)] <- (1 - kernel_values / Gst) / sqrt(n)
+  r[(2 * n + 1):(2 * n + nl)] <- pf * diff(H, differences = 2) / sqrt(nl)
   
-  if (nargout == 2) {
-    Kmatrix <- (1 / Gst) %*% t(rep(1, ns)) / sqrt(n)
-    Jr[1:2 * n, 1:ns] <- -kernelD(H, w, s) * Kmatrix
-    Jr[2 * n + 1:2 * n + nl, 1:ns] <- pf * L / sqrt(nl)
-  }
+  Kmatrix <- (1 / Gst) %*% t(rep(1, ns)) / sqrt(n)
+  Jr[1:(2 * n), 1:ns] <- -kernelD(H, w, s) * Kmatrix
+  Jr[(2 * n + 1):(2 * n + nl), 1:ns] <- pf * L / sqrt(nl)
   
   return(list(residuals = r, jacobian = Jr))
 }
 
 kernel <- function(H, w, s) {
-  # Dummy kernel function to be implemented
-  return(rep(1, length(w))) # Replace with actual implementation
+  # Funzione kernel fittizia, da implementare
+  return(rep(1, length(w))) # Sostituire con l'implementazione effettiva
 }
 
 kernelD <- function(H, w, s) {
-  # Dummy kernel derivative function to be implemented
-  return(matrix(1, nrow = length(w), ncol = length(H))) # Replace with actual implementation
+  # Funzione derivativa del kernel fittizia, da implementare
+  return(matrix(1, nrow = length(w), ncol = length(H))) # Sostituire con l'implementazione effettiva
 }
 
 lcurve <- function(Gexp, Hgs, w, s, SmoothFac) {
@@ -115,7 +113,7 @@ lcurve <- function(Gexp, Hgs, w, s, SmoothFac) {
   return(list(lamC = lamC, lam = lam, rho = rho, eta = eta))
 }
 
-# Example usage
+# Esempio d'uso
 Gexp <- runif(20)
 Hgs <- runif(10)
 w <- seq(1, 10, length.out = 10)
@@ -124,3 +122,4 @@ SmoothFac <- 0
 
 result <- lcurve(Gexp, Hgs, w, s, SmoothFac)
 print(result)
+
