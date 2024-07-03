@@ -15,10 +15,3 @@ InitializeH <- function(Gexp, w, s) {
   return(H)
 }
 
-# Example usage
-Gexp <- runif(20)  # Example experimental data
-w <- seq(1, 10, length.out = 10)  # Example frequencies
-s <- seq(1, 10, length.out = 10)  # Example relaxation modes
-
-H <- InitializeH(Gexp, w, s)
-print(H)

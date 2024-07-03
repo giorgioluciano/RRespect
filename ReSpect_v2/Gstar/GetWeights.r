@@ -38,10 +38,3 @@ GetWeights <- function(H, w, s) {
   return(wt)
 }
 
-# Example usage
-H <- matrix(runif(10), nrow=1)
-w <- seq(1, 10, length.out=10)
-s <- seq(1, 10, length.out=10)
-
-weights <- GetWeights(H, w, s)
-print(weights)

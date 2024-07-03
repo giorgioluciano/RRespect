@@ -70,14 +70,3 @@ MaxwellModes <- function(z, w, Gp, Gpp, prune = 0) {
   list(g = g, tau = tau, error = error, condKp = condKp)
 }
 
-# Example usage
-# Define example input values
-z <- c(1, 2, 3)
-w <- seq(0.1, 10, length.out = 100)
-Gp <- runif(100, min = 0, max = 10)
-Gpp <- runif(100, min = 0, max = 10)
-
-# Call the function
-result <- MaxwellModes(z, w, Gp, Gpp, prune = 1)
-print(result)
-

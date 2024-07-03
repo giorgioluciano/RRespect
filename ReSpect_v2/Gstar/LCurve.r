@@ -113,13 +113,4 @@ lcurve <- function(Gexp, Hgs, w, s, SmoothFac) {
   return(list(lamC = lamC, lam = lam, rho = rho, eta = eta))
 }
 
-# Esempio d'uso
-Gexp <- runif(20)
-Hgs <- runif(10)
-w <- seq(1, 10, length.out = 10)
-s <- seq(1, 10, length.out = 10)
-SmoothFac <- 0
-
-result <- lcurve(Gexp, Hgs, w, s, SmoothFac)
-print(result)
 

@@ -148,22 +148,3 @@ GetResidualJacobian <- function(pf, L, Gst, H, w, s) {
 
 
 
-
-
-# Example usage
-H <- runif(10)
-w <- seq(1, 10, length.out = 10)
-s <- seq(1, 10, length.out = 10)
-
-DK_result <- kernelD(H, w, s)
-print(DK_result)
-
-# Example usage
-lambda <- 1
-Gst <- runif(10)
-H <- runif(10)
-w <- seq(1, 10, length.out = 10)
-s <- seq(1, 10, length.out = 10)
-
-Hlambda <- LevenMarq(lambda, Gst, H, w, s)
-print(Hlambda)
