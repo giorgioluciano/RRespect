@@ -35,7 +35,7 @@ contSpec <- function(par = NULL) {
   n <- length(w)
   ns <- par$ns  # discretization of 'tau'
 
-  wmin <- min(w)
+  wmin <- w[1]
   wmax <- max(w)
 
   smin <- 0
@@ -84,7 +84,15 @@ contSpec <- function(par = NULL) {
     cat(sprintf("done (%5.1f seconds)\n(*) Writing and Printing, ...", as.numeric(difftime(Sys.time(), start_time, units = "secs"))))
   }
 
+   
   if (par$verbose) {
+    
+    if (!dir.exists("output")) {
+      if (!dir.create("output", showWarnings = FALSE)) {
+        stop("Error: unable to create the 'output' directory.")
+      }
+    }
+    
     if (par$lamC == 0) {
       write.table(data.frame(lam = lam, rho = rho, eta = eta), file = "output/rho-eta.dat", row.names = FALSE, col.names = FALSE, quote = FALSE)
     }

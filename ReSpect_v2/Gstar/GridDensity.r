@@ -60,10 +60,10 @@ GridDensity <- function(x, px, N, Pt = FALSE) {
 }
 
 # Example usage
-x <- seq(0, 10, length.out = 100)
-px <- dnorm(x, mean = 5, sd = 1)
-N <- 10
-Pt <- TRUE
+#x <- seq(0, 10, length.out = 100)
+#px <- dnorm(x, mean = 5, sd = 1)
+#N <- 10
+#Pt <- TRUE
 
-result <- GridDensity(x, px, N, Pt)
-print(result)
+#result <- GridDensity(x, px, N, Pt)
+#print(result)

@@ -10,7 +10,7 @@ SetParameters <- function() {
     ns = 100,            # Number of grid points to represent the continuous spectrum
     lamC = 0,            # Specify lambda_C instead of using the one inferred from the L-curve
     SmFacLam = 0,        # Smoothing Factor for controlling lambda_C
-    GstFile = 'Gt.dat',  # Default filename for Gp and Gpp data
+    GstFile = 'Gst.dat',  # Default filename for Gp and Gpp data
     FreqEnd = 1,         # Treatment of frequency window ends
     Nopt = 0,            # Specify number of discrete modes (>0), 0 to determine automatically
     prune = 1,           # Avoid modes with negative weights (=1) or don't care (0)

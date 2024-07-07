@@ -22,60 +22,65 @@
 
 library(Matrix)
 
-LevenMarq <- function(lambda, Gst, H, w, s) {
+GetResidualJacobian <- function(pf, L, Gst, H, w, s) {
   n <- length(w)
   ns <- length(s)
   nl <- ns - 2
-  hs <- s[2] / s[1]
+  r <- numeric(2*n + nl)
+  Jr <- matrix(0, nrow = 2*n + nl, ncol = ns)
   
-  tau <- 1e-3
-  nu <- 2
-  r <- numeric(2 * n + nl)
-  Jr <- matrix(0, 2 * n + nl, ns)
-  i <- 0
-  pf <- sqrt(lambda)
+  # Get the residual vector first
+  # r = vector of size (2n+nl,1)
   
-  # Create the tridiagonal matrix L
-  L <- bandSparse(nl, ns, c(-1, 0, 1), list(rep(1, nl), rep(-2, ns), rep(1, nl)))
+  head_r <-(1 - kernel(H, w, s) / Gst) / sqrt(n)
+  tail_r <- pf * diff(diff(H)) / sqrt(nl)  # second derivative
   
-  residuals_and_jacobian <- GetResidualJacobian(pf, L, Gst, H, w, s)
-  r <- residuals_and_jacobian$residuals
-  Jr <- residuals_and_jacobian$jacobian
-  mu <- tau * max(diag(crossprod(Jr)))
+  res <- c(head_r,tail_r)
   
-  ContinueCriteria <- TRUE
+  # Furnish the Jacobian Jr
+  # (2n+nl)*ns matrix
   
-  while (ContinueCriteria && i < 5000) {
-    i <- i + 1
-    
-    Delta <- solve(crossprod(Jr) + mu * diag(ns), -crossprod(Jr, r))
-    Hnew <- H + Delta
-    
-    new_residuals <- GetResidualJacobian(pf, L, Gst, Hnew, w, s)$residuals
-    rho <- (sum(r^2) - sum(new_residuals^2)) / (crossprod(Delta, mu * Delta - crossprod(Jr, r)))
-    
-    if (rho > 0) {
-      H <- Hnew
-      residuals_and_jacobian <- GetResidualJacobian(pf, L, Gst, H, w, s)
-      r <- residuals_and_jacobian$residuals
-      Jr <- residuals_and_jacobian$jacobian
-      
-      mu <- mu * max(1 / 3, 1 - (2 * rho - 1)^3)
-      nu <- 2
-      
-      if ((norm(Delta, type = "2") < 1e-6 && norm(crossprod(Jr, r), type = "I") < 1e-6) ||
-          (norm(Delta, type = "2") < 1e-6 * norm(H, type = "2"))) {
-        ContinueCriteria <- FALSE
-      }
-    } else {
-      mu <- mu * nu
-      nu <- 2 * nu
-    }
-  }
   
-  return(H)
+  Kmatrix <- matrix(1/Gst, nrow = 2*n, ncol = ns) / sqrt(n)
+  
+  
+  
+  head_Jr <- -kernelD(H, w, s) * Kmatrix
+  tail_Jr <- pf * L / sqrt(nl)
+  
+  Jr <- rbind(head_Jr,tail_Jr)
+  # Restituisci una lista con r e Jr
+  return(list(r = res, Jr = Jr))
 }
 
+
+kernelD <- function(H, w, s) {
+  ns <- length(s)
+  hs <- numeric(ns)
+  hs[1] <- 0.5 * log(s[2] / s[1])
+  hs[ns] <- 0.5 * log(s[ns] / s[ns - 1])
+  hs[2:(ns - 1)] <- 0.5 * (log(s[3:ns]) - log(s[1:(ns - 2)]))
+  
+  n <- length(w)
+  
+  ws <- outer(w, s, "*")
+  ws2 <- ws^2
+  Hsuper <- matrix(exp(H), nrow = 2 * n, ncol = ns, byrow = TRUE) * rep(hs, each = 2 * n)
+  
+  DK <- rbind(ws2 / (1 + ws2), ws / (1 + ws2)) * Hsuper
+  
+  return(DK)
+}
+
+# Function: kernel
+#
+# Outputs the 2n*1 dimensional vector K(H)(w) which is comparable to Gexp
+# Modifying kernel for unevenly spaced s_i
+#
+# Input: H = substituted CRS,
+#        w = n*1 vector containing frequencies,
+#        s = relaxation modes
+#
 
 kernel <- function(H, w, s) {
   ns <- length(s)
@@ -98,52 +103,66 @@ kernel <- function(H, w, s) {
 }
 
 
-kernelD <- function(H, w, s) {
-  ns <- length(s)
-  hs <- numeric(ns)
-  hs[1] <- 0.5 * log(s[2] / s[1])
-  hs[ns] <- 0.5 * log(s[ns] / s[ns - 1])
-  hs[2:(ns - 1)] <- 0.5 * (log(s[3:ns]) - log(s[1:(ns - 2)]))
-  
-  n <- length(w)
-  
-  ws <- outer(w, s, "*")
-  ws2 <- ws^2
-  Hsuper <- matrix(exp(H), nrow = 2 * n, ncol = ns, byrow = TRUE) * rep(hs, each = 2 * n)
-  
-  DK <- rbind(ws2 / (1 + ws2), ws / (1 + ws2)) * Hsuper
-  
-  return(DK)
-}
-
-GetResidualJacobian <- function(pf, L, Gst, H, w, s) {
+LevenMarq <- function(lambda, Gst, H, w, s) {
   n <- length(w)
   ns <- length(s)
   nl <- ns - 2
-  r <- numeric(2*n + nl)
-  Jr <- matrix(0, nrow = 2*n + nl, ncol = ns)
+  hs <- s[2] / s[1]
   
-  # Get the residual vector first
-  # r = vector of size (2n+nl,1)
+  tau <- 1e-3
+  nu <- 2
+  r <- numeric(2 * n + nl)
+  Jr <- matrix(0, 2 * n + nl, ns)
+  i <- 0
+  pf <- sqrt(lambda)
   
-  # Assumendo che kernel sia una funzione definita dall'utente
-  r[1:(2*n)] <- (1 - kernel(H, w, s) / Gst) / sqrt(n)  # the Gp and Gpp
+  # Create the tridiagonal matrix L
   
-  # In R, diff() restituisce un vettore di lunghezza n-1, quindi usiamo diff() due volte
-  r[(2*n+1):(2*n+nl)] <- pf * diff(diff(H)) / sqrt(nl)  # second derivative
+  L <- diag(-2, ns)
+  L[row(L) == col(L) - 1] <- 1
+  L[row(L) == col(L) + 1] <- 1
+  L_sub <- L[2:(nl+1), ]
+  L <- L_sub
   
-  # Furnish the Jacobian Jr
-  # (2n+nl)*ns matrix
+  residuals_and_jacobian <- GetResidualJacobian(pf, L, Gst, H, w, s)
   
-  # In R, non abbiamo bisogno di controllare il numero di output
-  Kmatrix <- matrix(1/Gst, nrow = 2*n, ncol = ns) / sqrt(n)
+  r <- residuals_and_jacobian$r
+  Jr <- residuals_and_jacobian$Jr
   
-  # Assumendo che kernelD sia una funzione definita dall'utente
-  Jr[1:(2*n), 1:ns] <- -kernelD(H, w, s) * Kmatrix
-  Jr[(2*n+1):(2*n+nl), 1:ns] <- pf * L / sqrt(nl)
   
-  # Restituisci una lista con r e Jr
-  return(list(r = r, Jr = Jr))
+  mu <- tau * max(diag(crossprod(Jr)))
+  
+  ContinueCriteria <- TRUE
+  
+  while (ContinueCriteria && i < 5000) {
+    i <- i + 1
+    
+    Delta <- solve(crossprod(Jr) + mu * diag(ns), -crossprod(Jr, r))
+    Hnew <- H + Delta
+    
+    new_residuals <- GetResidualJacobian(pf, L, Gst, Hnew, w, s)$r
+    rho <- (sum(r^2) - sum(new_residuals^2)) / (crossprod(Delta, mu * Delta - crossprod(Jr, r)))
+    
+    if (rho > 0) {
+      H <- Hnew
+      residuals_and_jacobian <- GetResidualJacobian(pf, L, Gst, H, w, s)
+      r <- residuals_and_jacobian$r
+      Jr <- residuals_and_jacobian$Jr
+      
+      mu <- mu * max(1 / 3, 1 - (2 * rho - 1)^3)
+      nu <- 2
+      
+      if ((norm(Delta, type = "2") < 1e-6 && norm(crossprod(Jr, r), type = "I") < 1e-6) ||
+          (norm(Delta, type = "2") < 1e-6 * norm(H, type = "2"))) {
+        ContinueCriteria <- FALSE
+      }
+    } else {
+      mu <- mu * nu
+      nu <- 2 * nu
+    }
+  }
+  
+  return(H)
 }
 
 

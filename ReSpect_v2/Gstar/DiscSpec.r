@@ -51,7 +51,7 @@ discSpec <- function(par = NULL) {
   
   # Find the distribution of nodes you need
   wt <- GetWeights(H, w, s)
-  wt <- wt / trapz(log(s), wt)
+  wt <- wt / pracma::trapz(log(s), wt)
   wt <- (1 - par$BaseDistWt) * wt + (par$BaseDistWt * mean(wt)) * rep(1, length(wt))
   
   # Try different N: number of Maxwell modes

@@ -1,4 +1,4 @@
-library(MASS)  # For ginv function (Moore-Penrose pseudoinverse)
+
 
 LLS <- function(w, tau, Gexp) {
   n <- length(Gexp) / 2
@@ -6,7 +6,12 @@ LLS <- function(w, tau, Gexp) {
   ws <- X
   ws2 <- ws^2
   
-  K <- rbind((ws2 / (1 + ws2)), (ws / (1 + ws2)))
+  head_K <- (ws2 / (1 + ws2))
+  tail_K <- (ws / (1 + ws2))
+  
+  K <- cbind(head_K, tail_K)
+  K <-t(K)
+  #check
   
   # Verify dimensions before multiplication
   if (nrow(K) != length(Gexp)) {
@@ -15,15 +20,23 @@ LLS <- function(w, tau, Gexp) {
   
   Kp <- diag(1 / Gexp) %*% K
   
-  condKp <- kappa(Kp)
-  g <- ginv(Kp) %*% rep(1, length(Gexp))
+  condKp  = cond(Kp)
+  ones_matrix <- matrix(1, nrow = length(Gexp))
   
-  GpM <- (ws2 / (1 + ws2)) %*% g
-  GppM <- (ws / (1 + ws2)) %*% g
+  
+  
+  fit <- lm(ones_matrix ~ Kp - 1)  # -1 per evitare l'intercetta
+  g <- coef(fit)
+  
+  GpM <- t(ws2 / (1 + ws2)) %*% g
+  GppM <- t(ws / (1 + ws2)) %*% g
   error <- sum((GpM / Gexp[1:n] - 1)^2 + (GppM / Gexp[(n + 1):(2 * n)] - 1)^2)
   
   list(g = g, error = error, condKp = condKp)
 }
+
+
+#maxwell_modes <- MaxwellModes(z, w, Gp, Gpp, par$prune)
 
 MaxwellModes <- function(z, w, Gp, Gpp, prune = 0) {
   N <- length(z)
