@@ -67,7 +67,9 @@ discSpec <- function(par = NULL) {
     grid <- GridDensity(log(s), wt, N)
     z <- grid$z
     hz <- grid$hz
+    
     maxwell_modes <- MaxwellModes(z, w, Gp, Gpp, par$prune)
+    
     g <- maxwell_modes$g
     tau <- maxwell_modes$tau
     ev[i] <- maxwell_modes$error

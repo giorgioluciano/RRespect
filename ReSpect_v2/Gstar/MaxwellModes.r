@@ -18,19 +18,27 @@ LLS <- function(w, tau, Gexp) {
     stop("Dimension mismatch between K and Gexp")
   }
   
+  
   Kp <- diag(1 / Gexp) %*% K
   
-  condKp  = cond(Kp)
+  condKp  = pracma::cond(Kp)
+
   ones_matrix <- matrix(1, nrow = length(Gexp))
   
   
-  
   fit <- lm(ones_matrix ~ Kp - 1)  # -1 per evitare l'intercetta
-  g <- coef(fit)
+ 
+  g=fit$coefficients
   
-  GpM <- t(ws2 / (1 + ws2)) %*% g
-  GppM <- t(ws / (1 + ws2)) %*% g
+  
+  GpM_nog <- t(ws2/(1+ws2))
+  GpM <- GpM_nog  %*% g
+  
+  GppM_nog <- t(ws/(1+ws2))
+  GppM <- GppM_nog  %*% g
+
   error <- sum((GpM / Gexp[1:n] - 1)^2 + (GppM / Gexp[(n + 1):(2 * n)] - 1)^2)
+  
   
   list(g = g, error = error, condKp = condKp)
 }

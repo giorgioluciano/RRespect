@@ -5,14 +5,11 @@ source("I:/giorgioluciano.github.io/RRespect/ReSpect_v2/Gstar/InitializeH.r")
 source("I:/giorgioluciano.github.io/RRespect/ReSpect_v2/Gstar/LevenMarq.r")
 source("I:/giorgioluciano.github.io/RRespect/ReSpect_v2/Gstar/LCurve.r")
 
+
+#setwd("I:/giorgioluciano.github.io/RRespect/ReSpect_v2/Gstar")
+
+par=SetParameters()
 H=contSpec()
-
-
-source("I:/giorgioluciano.github.io/RRespect/ReSpect_v2/Gstar/GetWeights.r")
-
-
-setwd("I:/giorgioluciano.github.io/RRespect/ReSpect_v2/Gstar")
-
 
 source("I:/giorgioluciano.github.io/RRespect/ReSpect_v2/Gstar/DiscSpec.r")
 source("I:/giorgioluciano.github.io/RRespect/ReSpect_v2/Gstar/GetWeights.r")
