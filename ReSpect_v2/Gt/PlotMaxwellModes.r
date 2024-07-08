@@ -1,32 +1,45 @@
-# Function PlotMaxwellModes
-#
-# Plots and compares experimental G(t) with that obtained from the
-# corresponding DRS
-#
-# Input: g, tau = spectrum (array)
-#        t  = n*1 vector contains times,
-#        Gt = n*1 vector contains G(t),
-#
+PlotMaxwellModes <- function(g, t, w, Gp, Gpp) {
+  # Function PlotMaxwellModes(input)
+  #
+  # Plots experimental dynamic moduli and dynamic moduli obtained from the
+  # corresponding CRS
+  #
+  # Input: g, t = spectrum
+  #        w = n*1 vector contains frequencies,
+  #        Gp, Gpp
+  #
 
-PlotMaxwellModes <- function(g, tau, t, Gt) {
-  
   N <- length(g)
+
+  # Create a grid of t and w
+  X <- matrix(rep(t, each = length(w)), nrow = length(w), ncol = N)
+  Y <- matrix(rep(w, N), nrow = length(w), ncol = N)
+  ws <- X * Y
+  ws2 <- ws^2
+
+  # Compute GpM and GppM
   
-  # Create the kernel matrix
-  K <- outer(t, tau, function(T, S) exp(-T / S))
   
-  # Compute the model G(t) from the Maxwell modes
-  GtM <- K %*% g
+  GpM_nog <- t(ws2/(1+ws2))
+  GpM <- crossprod(GpM_nog,g)
   
-  # Plot the experimental and model G(t)
-  plot(t, Gt, log = "xy", col = "blue", pch = 16, xlab = "Time", ylab = "G(t)", main = "Comparison of Experimental and Model G(t)")
-  lines(t, GtM, col = "black", lwd = 2)
+  GppM_nog <- t(ws/(1+ws2))
+  GppM <- crossprod(GppM_nog,g)
+  
+  # Plotting using log-log scale
+  plot(w, Gp, log = "xy", col = "blue", pch = 1, xlab = "Frequency", ylab = "Modulus", type = "b", lwd = 2)
+  lines(w, GpM, col = "black", lwd = 2, type = "b")
+  points(w, Gpp, col = "blue", pch = 1, lwd = 2)
+  lines(w, GppM, col = "black", lwd = 2, type = "b")
 }
 
 # Example usage
-# Assuming g, tau, t, and Gt are defined elsewhere in your R script
-# g <- ... # Define the spectrum array
-# tau <- ... # Define the relaxation times array
-# t <- ... # Define the times array
-# Gt <- ... # Define the experimental G(t) array
-# PlotMaxwellModes(g, tau, t, Gt)
+# Define example input values
+#g <- c(1, 2, 3)
+#t <- c(0.1, 0.2, 0.3)
+#w <- seq(0.1, 10, length.out = 100)
+#Gp <- runif(100, min = 0, max = 10)
+#Gpp <- runif(100, min = 0, max = 10)
+
+# Call the function
+#PlotMaxwellModes(g, t, w, Gp, Gpp)

@@ -1,73 +1,90 @@
-# Function: MaxwellModes
-#
-# Solves the linear least squares problem to obtain the DRS
-#
-# Input: z = points distributed according to the density,
-#        t  = n*1 vector contains times,
-#        Gt = n*1 vector contains G(t),
-#
-#        Prune = Avoid modes with -ve weights (=1), or don't care (0) 
-#
-# Output: g, tau = spectrum  (array)
-#         error = relative error between the input data and the G(t) inferred from the DRS
-#         condKp = condition number
-#
 
-MaxwellModes <- function(z, t, Gt, prune = 0) {
+
+LLS <- function(w, tau, Gexp) {
+  n <- length(Gexp) / 2
+  X <- outer(tau, w, "*")
+  ws <- X
+  ws2 <- ws^2
   
+  head_K <- (ws2 / (1 + ws2))
+  tail_K <- (ws / (1 + ws2))
+  
+  K <- cbind(head_K, tail_K)
+  K <-t(K)
+  #check
+  
+  # Verify dimensions before multiplication
+  if (nrow(K) != length(Gexp)) {
+    stop("Dimension mismatch between K and Gexp")
+  }
+  
+  
+  Kp <- diag(1 / Gexp) %*% K
+  Kp <- as.matrix(Kp)
+  condKp  = pracma::cond(Kp)
+
+  ones_matrix <- matrix(1, nrow = length(Gexp))
+  
+  Gexp <- as.matrix(Gexp)
+  g <- qr.solve(Kp, matrix(1, nrow = nrow(Gexp), ncol = 1))
+  
+  GpM_nog <- t(ws2/(1+ws2))
+  GpM <- GpM_nog  %*% g
+  
+  GppM_nog <- t(ws/(1+ws2))
+  GppM <- GppM_nog  %*% g
+
+  error <- sum((GpM / Gexp[1:n] - 1)^2 + (GppM / Gexp[(n + 1):(2 * n)] - 1)^2)
+  
+  
+  list(g = g, error = error, condKp = condKp)
+}
+
+
+#maxwell_modes <- MaxwellModes(z, w, Gp, Gpp, par$prune)
+
+MaxwellModes <- function(z, w, Gp, Gpp, prune = 0) {
   N <- length(z)
   tau <- exp(z)
-  n <- length(t)
-  Gexp <- Gt
+  n <- length(w)
+  Gexp <- c(Gp, Gpp)
   
-  if (prune == 0) {
-    result <- LLS(t, tau, Gexp)
+  if (!prune) {
+    result <- LLS(w, tau, Gexp)
     g <- result$g
     error <- result$error
     condKp <- result$condKp
   } else {
     tau1 <- tau
-    result1 <- LLS(t, tau1, Gexp)
+    result1 <- LLS(w, tau1, Gexp)
     g1 <- result1$g
     error1 <- result1$error
     condKp1 <- result1$condKp
     
     ineg <- which(g1 < 0)
-    tau2 <- tau1[-ineg]
+    gneg <- g1[ineg]
     
-    result2 <- LLS(t, tau2, Gexp)
+    tau2 <- tau1
+    tau2 <- tau2[-ineg]
+    
+    result2 <- LLS(w, tau2, Gexp)
     g2 <- result2$g
     error2 <- result2$error
     condKp2 <- result2$condKp
     
     if (condKp2 < condKp1 && (error2 / error1 - 1) < 0.05) {
-      g <- g2
       error <- error2
       condKp <- condKp2
+      g <- g2
       tau <- tau2
     } else {
-      g <- g1
       error <- error1
       condKp <- condKp1
+      g <- g1
       tau <- tau1
     }
   }
   
-  return(list(g = g, tau = tau, error = error, condKp = condKp))
+  list(g = g, tau = tau, error = error, condKp = condKp)
 }
 
-# Subfunction which does the actual LLS problem
-LLS <- function(t, tau, Gexp) {
-  
-  n <- length(Gexp)
-  K <- outer(t, tau, function(T, S) exp(-T / S))
-  
-  Kp <- diag(1 / Gexp) %*% K
-  condKp <- kappa(Kp)
-  g <- solve(Kp, rep(1, n))
-  
-  GtM <- K %*% g
-  error <- sum((GtM / Gexp - 1)^2)
-  
-  return(list(g = g, error = error, condKp = condKp))
-}

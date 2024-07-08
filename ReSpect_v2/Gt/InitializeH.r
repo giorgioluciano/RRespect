@@ -1,28 +1,17 @@
-# Function: InitializeH
-#
-# Input:  Gexp = n*1 vector [Gt],
-#         t = n*1 vector contains times,
-#         s = relaxation modes,
-#
-# Output: H = guessed H
-#
+# Define the LevenMarq function as used previously
 
-InitializeH <- function(Gexp, t, s) {
-  
-  # To guess spectrum, pick a negative Hgs and a large value of lambda to get a
-  # solution that is most determined by the regularization, then use that as
-  # the next guess.
-  
+InitializeH <- function(Gexp, w, s) {
+  # Initial guess
   H <- -5.0 + sin(pi * s)
   
+  # Initial large lambda
   lambda <- 1e0
-  Hlam <- LevenMarq(lambda, Gexp, H, t, s)
+  Hlam <- LevenMarq(lambda, Gexp, H, w, s)
   
-  # Successively improve the initial guess until you have a reasonably good
-  # guess for low lambda
-  
+  # Successively improve the initial guess for low lambda
   lambda <- 1e-8
-  H <- LevenMarq(lambda, Gexp, Hlam, t, s)
+  H <- LevenMarq(lambda, Gexp, Hlam, w, s)
   
   return(H)
 }
+

@@ -105,8 +105,7 @@ contSpec <- function(par = NULL) {
   }
 
   if (par$plotting) {
-    par(mfrow = c(2, 1))
-
+   
     plot(s, H, type = "o", log = "x", xlab = "s", ylab = "H(s)", main = "H")
     K <- kernel(H, w, s)
     plot(w, Gexp[1:n], type = "p", log = "xy", xlab = "w", ylab = "G*(exp), G*(fit)", main = "Gp", col = "red")

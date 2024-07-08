@@ -103,7 +103,7 @@ discSpec <- function(par = NULL) {
   
   # Some Plotting
   if (par$plotting) {
-    par(mfrow = c(2, 1))
+   
     
     plot(tau, g, type = "o", log = "xy", xlab = "tau", ylab = "g", main = "discrete spectrum")
     
@@ -124,8 +124,8 @@ discSpec <- function(par = NULL) {
     # K = kernel(H,w,s);
     # loglog(w,K[1:n],'r-','LineWidth',2); hold on
     # loglog(w,K[n+1:2*n],'r-','LineWidth',2);
-    xlabel('w')
-    ylabel('G*')
+    xlab('w')
+    ylab('G*')
     # hold off
   }
   

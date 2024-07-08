@@ -20,16 +20,13 @@ LLS <- function(w, tau, Gexp) {
   
   
   Kp <- diag(1 / Gexp) %*% K
-  
+  Kp <- as.matrix(Kp)
   condKp  = pracma::cond(Kp)
 
   ones_matrix <- matrix(1, nrow = length(Gexp))
   
-  
-  fit <- lm(ones_matrix ~ Kp - 1)  # -1 per evitare l'intercetta
- 
-  g=fit$coefficients
-  
+  Gexp <- as.matrix(Gexp)
+  g <- qr.solve(Kp, matrix(1, nrow = nrow(Gexp), ncol = 1))
   
   GpM_nog <- t(ws2/(1+ws2))
   GpM <- GpM_nog  %*% g

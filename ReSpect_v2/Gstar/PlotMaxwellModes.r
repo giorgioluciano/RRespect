@@ -18,9 +18,14 @@ PlotMaxwellModes <- function(g, t, w, Gp, Gpp) {
   ws2 <- ws^2
 
   # Compute GpM and GppM
-  GpM <- rowSums((ws2 / (1 + ws2)) * g)
-  GppM <- rowSums((ws / (1 + ws2)) * g)
-
+  
+  
+  GpM_nog <- t(ws2/(1+ws2))
+  GpM <- crossprod(GpM_nog,g)
+  
+  GppM_nog <- t(ws/(1+ws2))
+  GppM <- crossprod(GppM_nog,g)
+  
   # Plotting using log-log scale
   plot(w, Gp, log = "xy", col = "blue", pch = 1, xlab = "Frequency", ylab = "Modulus", type = "b", lwd = 2)
   lines(w, GpM, col = "black", lwd = 2, type = "b")

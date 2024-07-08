@@ -2,30 +2,49 @@
 #
 # Reads in the experimental data from the input file
 #
-# Input:  fname = name of file that contains G(t) in 2 columns [t Gt]
+# Input:  fname = name of file that contains G*(w) in 3 columns [w Gp Gpp]
+#         Space it evenly on a log scale
 #
-# Output: A n*1 vector "t", and a n*1 vector Gt
+# Output: A n*1 vector "w", and a 2n*1 vector Gexp = [Gp; Gpp]
 
 GetExpData <- function(fname) {
-  data <- read.table(fname)  # Read data from file
-  to <- data[, 1]            # Extract time vector
-  Gto <- data[, 2]           # Extract Gt vector
+  # Read the data from the file
+  data <- read.table(fname, header = FALSE)
   
-  # Remove duplicate time values and interpolate to uniform t vector
+  # Separate the data into three columns: w, Gt
+  to <- data[, 1]
+  Gto <- data[, 2]
+  
+  
+  # Remove any repeated frequency values
   to_unique <- unique(to)
-  Gto_unique <- Gto[match(to_unique, to)]
   
-  # Interpolate using logspace to ensure spacing is uniform in log scale
-  t <- logspace(log10(min(to_unique)), log10(max(to_unique)), length(to_unique))
-  Gt <- approx(to_unique, Gto_unique, xout = t, method = "linear", rule = 2)$y  # Linear interpolation
+  i <- match(to_unique, to)
   
-  return(list(t = t, Gt = Gt))
+  Gto <- Gto[i]
+  to <- to_unique
+  
+  # Space it evenly on a log scale
+  
+  t <-  10^seq(log10(min(to)), log10(max(to)), length.out = length(to))
+  Gt <- approx(to, Gto, xout = t, method = "linear", rule = 2)$y
+  
+  
+  
+  
+  
+  
+  
+  
+  return(list(t = t, Gt))
 }
 
+
 # Example usage
-fname <- "experimental_data.txt"
-exp_data <- GetExpData(fname)
-t <- exp_data$t
-Gt <- exp_data$Gt
-print(t)
-print(Gt)
+#fname <- "Gst.dat"  # replace with your actual file path
+#result <- GetExpData(fname)
+#w <- result$w
+#Gexp <- result$Gexp
+
+#print(w)
+#print(Gexp)
