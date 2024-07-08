@@ -54,33 +54,6 @@ GetResidualJacobian <- function(pf, L, Gst, H, w, s) {
 }
 
 
-kernelD <- function(H, w, s) {
-  ns <- length(s)
-  hs <- numeric(ns)
-  hs[1] <- 0.5 * log(s[2] / s[1])
-  hs[ns] <- 0.5 * log(s[ns] / s[ns - 1])
-  hs[2:(ns - 1)] <- 0.5 * (log(s[3:ns]) - log(s[1:(ns - 2)]))
-  
-  n <- length(w)
-  
-  ws <- outer(w, s, "*")
-  ws2 <- ws^2
-  Hsuper <- matrix(exp(H), nrow = 2 * n, ncol = ns, byrow = TRUE) * rep(hs, each = 2 * n)
-  
-  DK <- rbind(ws2 / (1 + ws2), ws / (1 + ws2)) * Hsuper
-  
-  return(DK)
-}
-
-# Function: kernel
-#
-# Outputs the 2n*1 dimensional vector K(H)(w) which is comparable to Gexp
-# Modifying kernel for unevenly spaced s_i
-#
-# Input: H = substituted CRS,
-#        w = n*1 vector containing frequencies,
-#        s = relaxation modes
-#
 
 kernel <- function(H, w, s) {
   ns <- length(s)
@@ -89,15 +62,17 @@ kernel <- function(H, w, s) {
   # Uses trapezoidal rule for integration
   hs[1] <- 0.5 * log(s[2] / s[1])
   hs[ns] <- 0.5 * log(s[ns] / s[ns - 1])
-  
   hs[2:(ns - 1)] <- 0.5 * (log(s[3:ns]) - log(s[1:(ns - 2)]))
   
   # Create meshgrid equivalent
-  ws <- outer(w, s, "*")
-  ws2 <- ws^2
+  S <- outer(s, rep(1, length(t)))
+  T <- outer(rep(1, length(s)), t)
   
-  # Calculate K
-  K <- c((ws2 / (1 + ws2)) %*% (hs * exp(H)), (ws / (1 + ws2)) %*% (hs * exp(H)))
+  kern <- exp(-T/S)
+
+  #rm(S, T)
+
+  K <- kern %*% (hs * exp(H))
   
   return(K)
 }
