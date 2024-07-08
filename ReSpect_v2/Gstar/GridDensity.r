@@ -42,6 +42,8 @@ GridDensity <- function(x, px, N, Pt = FALSE) {
 
   beta <- seq(1, N - 2) * alfa
   z[2:(N - 1)] <- approx(ci, xi, beta)$y
+  
+  
 
   if (Pt) {
     par(mfrow = c(2, 1))
@@ -60,10 +62,10 @@ GridDensity <- function(x, px, N, Pt = FALSE) {
 }
 
 # Example usage
-x <- seq(0, 10, length.out = 100)
-px <- dnorm(x, mean = 5, sd = 1)
-N <- 10
-Pt <- TRUE
+#x <- seq(0, 10, length.out = 100)
+#px <- dnorm(x, mean = 5, sd = 1)
+#N <- 10
+#Pt <- TRUE
 
-result <- GridDensity(x, px, N, Pt)
-print(result)
+#result <- GridDensity(x, px, N, Pt)
+#print(result)

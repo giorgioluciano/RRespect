@@ -30,11 +30,11 @@ PlotMaxwellModes <- function(g, t, w, Gp, Gpp) {
 
 # Example usage
 # Define example input values
-g <- c(1, 2, 3)
-t <- c(0.1, 0.2, 0.3)
-w <- seq(0.1, 10, length.out = 100)
-Gp <- runif(100, min = 0, max = 10)
-Gpp <- runif(100, min = 0, max = 10)
+#g <- c(1, 2, 3)
+#t <- c(0.1, 0.2, 0.3)
+#w <- seq(0.1, 10, length.out = 100)
+#Gp <- runif(100, min = 0, max = 10)
+#Gpp <- runif(100, min = 0, max = 10)
 
 # Call the function
-PlotMaxwellModes(g, t, w, Gp, Gpp)
+#PlotMaxwellModes(g, t, w, Gp, Gpp)

@@ -17,11 +17,13 @@ GetExpData <- function(fname) {
   Gppo <- data[, 3]
   
   # Remove any repeated frequency values
-  unique_data <- unique(data)
-  wo <- unique_data[, 1]
-  Gpo <- unique_data[, 2]
-  Gppo <- unique_data[, 3]
+  wo_unique <- unique(wo)
+  i <- match(wo_unique, wo)
+  j <- match(wo, wo_unique)
+  Gpo <- Gpo[i]
+  Gppo <- Gppo[i]
   
+  wo <- wo_unique
   # Space it evenly on a log scale
   w <-  10^seq(log10(min(wo)), log10(max(wo)), length.out = length(wo))
   Gp <- approx(wo, Gpo, xout = w, method = "linear", rule = 2)$y
@@ -29,7 +31,7 @@ GetExpData <- function(fname) {
   
   # Use supersmoother to clean it up further. This may be optional
   Gp <- supsmu(w, Gp)$y
-  Gpp <- supsmu(w, Gpp)$y
+  Gpp = supsmu(w, Gpp)$y
   
   # Combine Gp and Gpp into a single vector
   Gexp <- c(Gp, Gpp)
