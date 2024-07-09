@@ -29,14 +29,7 @@ GetExpData <- function(fname) {
   t <-  10^seq(log10(min(to)), log10(max(to)), length.out = length(to))
   Gt <- approx(to, Gto, xout = t, method = "linear", rule = 2)$y
   
-  
-  
-  
-  
-  
-  
-  
-  return(list(t = t, Gt))
+  return(list(t = t, Gt=Gt))
 }
 
 

@@ -3,7 +3,7 @@
 # 
 #  Input: Gexp = 2n*1 vector [Gp; Gpp],
 #         Hgs = guessed H,
-#         w = n*1 vector contains frequencies,
+#         t = n*1 vector contains frequencies,
 #         s = relaxation modes,
 #         SmoothFac = Indirect way of controlling lambda_C, Set between -1 
 #                    (lowest lambda explored) and 1 (highest lambda explored);
@@ -15,7 +15,7 @@
 # 
 #  Plot the L-curve. Can call the routine "corner.m" to find the elbow again
 
-lcurve <- function(Gexp, Hgs, w, s, SmoothFac) {
+lcurve <- function(Gexp, Hgs, t, s, SmoothFac) {
   
   npoints <- 40
   
@@ -28,11 +28,11 @@ lcurve <- function(Gexp, Hgs, w, s, SmoothFac) {
   eta <- numeric(npoints)
   rho <- numeric(npoints)
   
-  # Assumendo che le funzioni LevenMarq e kernel siano già definite in R
+  
   for (i in 1:length(lam)) {
     lambda <- lam[i]
-    H <- LevenMarq(lambda, Gexp, Hgs, w, s)
-    rho[i] <- norm((1 - kernel(H, w, s) / Gexp), type = "2")
+    H <- LevenMarq(lambda, Gexp, Hgs, t, s)
+    rho[i] <- norm((1 - kernel(H, t, s) / Gexp), type = "2")
     eta[i] <- norm(diff(H, differences = 2), type = "2")
   }
   

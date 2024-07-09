@@ -29,7 +29,7 @@ SetParameters <- function() {
   
   # Default filename for Gp and Gpp data
   # It should contain G*(w) in 3 columns [w Gp Gpp]
-  par$GstFile <- 'Gst.dat'
+  par$GstFile <- 'Gt.dat'
   
   # Treatment of frequency window ends:
   #  = 3 : t = 1/w - strict condition

@@ -24,7 +24,7 @@ contSpec <- function(par = NULL) {
 
   exp_data <- GetExpData(par$GstFile)
   t <- exp_data$t
-  Gexp <- exp_data$Gexp
+  Gexp <- exp_data$Gt
 
   if (par$verbose) {
     cat("done\n(*) Initial Set up...")
@@ -32,7 +32,7 @@ contSpec <- function(par = NULL) {
 
   start_time <- Sys.time()
 
-  n <- length(w)
+  n <- length(t)
   ns <- par$ns  # discretization of 'tau'
 
   tmin <- t[1]
@@ -41,20 +41,20 @@ contSpec <- function(par = NULL) {
   smin <- 0
   smax <- 0
 
-  switch(par$FreqEnd,
+  switch(par.FreqEnd,
          `1` = {
-           smin <- exp(-pi / 2) / tmax
-           smax <- exp(pi / 2) / tmin
+           smin <- exp(-pi/2) * tmin
+           smax <- exp(pi/2) * tmax
          },
          `2` = {
-           smin <- 1 / tmax
-           smax <- 1 / tmin
+           smin <- tmin
+           smax <- tmax
          },
          `3` = {
-           smin <- exp(pi / 2) / tmax
-           smax <- exp(-pi / 2) / tmin
-         })
-
+           smin <- exp(pi/2) * tmin
+           smax <- exp(-pi/2) * tmax
+         }
+        ) 
   hs <- (smax / smin)^(1 / (ns - 1))
   s <- smin * hs^seq(0, ns - 1)
 

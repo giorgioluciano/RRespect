@@ -22,8 +22,8 @@
 
 library(Matrix)
 
-GetResidualJacobian <- function(pf, L, Gst, H, w, s) {
-  n <- length(w)
+GetResidualJacobian <- function(pf, L, Gst, H, t, s) {
+  n <- length(t)
   ns <- length(s)
   nl <- ns - 2
   r <- numeric(2*n + nl)
@@ -32,7 +32,7 @@ GetResidualJacobian <- function(pf, L, Gst, H, w, s) {
   # Get the residual vector first
   # r = vector of size (2n+nl,1)
   
-  head_r <-(1 - kernel(H, w, s) / Gst) / sqrt(n)
+  head_r <-(1 - kernel(H, t, s) / Gst) / sqrt(n)
   tail_r <- pf * diff(diff(H)) / sqrt(nl)  # second derivative
   
   res <- c(head_r,tail_r)
@@ -43,9 +43,7 @@ GetResidualJacobian <- function(pf, L, Gst, H, w, s) {
   
   Kmatrix <- matrix(1/Gst, nrow = 2*n, ncol = ns) / sqrt(n)
   
-  
-  
-  head_Jr <- -kernelD(H, w, s) * Kmatrix
+  head_Jr <- -kernelD(H, t, s) * Kmatrix
   tail_Jr <- pf * L / sqrt(nl)
   
   Jr <- rbind(head_Jr,tail_Jr)
@@ -54,9 +52,8 @@ GetResidualJacobian <- function(pf, L, Gst, H, w, s) {
 }
 
 
-
-kernel <- function(H, w, s) {
-  ns <- length(s)
+kernel <- function(H, t, s) {
+  ns <- length(t)
   hs <- numeric(ns)
   
   # Uses trapezoidal rule for integration
@@ -71,15 +68,38 @@ kernel <- function(H, w, s) {
   kern <- exp(-T/S)
 
   #rm(S, T)
-
+  
   K <- kern %*% (hs * exp(H))
   
   return(K)
 }
 
 
-LevenMarq <- function(lambda, Gst, H, w, s) {
-  n <- length(w)
+kernelD <- function(H, t, s) {
+  ns <- length(s)
+  hs <- numeric(ns)
+  hs[1] <- 0.5 * log(s[2] / s[1])
+  hs[ns] <- 0.5 * log(s[ns] / s[ns - 1])
+  hs[2:(ns - 1)] <- 0.5 * (log(s[3:ns]) - log(s[1:(ns - 2)]))
+  
+  n <- length(t)
+  
+  S <- outer(s, rep(1, length(t)))
+  T <- outer(rep(1, length(s)), t)
+  
+  kern <- exp(-T/S)
+  
+  Hsuper <- matrix(exp(H), nrow = 2 * n, ncol = ns, byrow = TRUE) * rep(hs, each = 2 * n)
+  
+  DK <- kern %*% Hsuper
+  
+  return(DK)
+}
+
+
+
+LevenMarq <- function(lambda, Gst, H, t, s) {
+  n <- length(t)
   ns <- length(s)
   nl <- ns - 2
   hs <- s[2] / s[1]
@@ -99,7 +119,7 @@ LevenMarq <- function(lambda, Gst, H, w, s) {
   L_sub <- L[2:(nl+1), ]
   L <- L_sub
   
-  residuals_and_jacobian <- GetResidualJacobian(pf, L, Gst, H, w, s)
+  residuals_and_jacobian <- GetResidualJacobian(pf, L, Gst, H, t, s)
   
   r <- residuals_and_jacobian$r
   Jr <- residuals_and_jacobian$Jr
@@ -115,12 +135,12 @@ LevenMarq <- function(lambda, Gst, H, w, s) {
     Delta <- solve(crossprod(Jr) + mu * diag(ns), -crossprod(Jr, r))
     Hnew <- H + Delta
     
-    new_residuals <- GetResidualJacobian(pf, L, Gst, Hnew, w, s)$r
+    new_residuals <- GetResidualJacobian(pf, L, Gst, Hnew, t, s)$r
     rho <- (sum(r^2) - sum(new_residuals^2)) / (crossprod(Delta, mu * Delta - crossprod(Jr, r)))
     
     if (rho > 0) {
       H <- Hnew
-      residuals_and_jacobian <- GetResidualJacobian(pf, L, Gst, H, w, s)
+      residuals_and_jacobian <- GetResidualJacobian(pf, L, Gst, H, t, s)
       r <- residuals_and_jacobian$r
       Jr <- residuals_and_jacobian$Jr
       
