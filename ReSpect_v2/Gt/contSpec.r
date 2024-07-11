@@ -41,7 +41,7 @@ contSpec <- function(par = NULL) {
   smin <- 0
   smax <- 0
 
-  switch(par.FreqEnd,
+  switch(par$FreqEnd,
          `1` = {
            smin <- exp(-pi/2) * tmin
            smax <- exp(pi/2) * tmax

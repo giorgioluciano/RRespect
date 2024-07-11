@@ -26,8 +26,8 @@ GetResidualJacobian <- function(pf, L, Gst, H, t, s) {
   n <- length(t)
   ns <- length(s)
   nl <- ns - 2
-  r <- numeric(2*n + nl)
-  Jr <- matrix(0, nrow = 2*n + nl, ncol = ns)
+  r <- numeric(n + nl)
+  Jr <- matrix(0, nrow = n + nl, ncol = ns)
   
   # Get the residual vector first
   # r = vector of size (2n+nl,1)
@@ -41,7 +41,7 @@ GetResidualJacobian <- function(pf, L, Gst, H, t, s) {
   # (2n+nl)*ns matrix
   
   
-  Kmatrix <- matrix(1/Gst, nrow = 2*n, ncol = ns) / sqrt(n)
+  Kmatrix <- matrix(1/Gst, nrow = n, ncol = ns) / sqrt(n)
   
   head_Jr <- -kernelD(H, t, s) * Kmatrix
   tail_Jr <- pf * L / sqrt(nl)
@@ -65,7 +65,7 @@ kernel <- function(H, t, s) {
   S <- outer(s, rep(1, length(t)))
   T <- outer(rep(1, length(s)), t)
   
-  kern <- exp(-T/S)
+  kern <- t(exp(-T/S))
 
   #rm(S, T)
   
@@ -85,13 +85,14 @@ kernelD <- function(H, t, s) {
   n <- length(t)
   
   S <- outer(s, rep(1, length(t)))
+  
   T <- outer(rep(1, length(s)), t)
   
-  kern <- exp(-T/S)
+  kern <- t(exp(-T/S))
   
-  Hsuper <- matrix(exp(H), nrow = 2 * n, ncol = ns, byrow = TRUE) * rep(hs, each = 2 * n)
+  Hsuper <- matrix(exp(H), nrow = n, ncol = ns, byrow = TRUE) * rep(hs, each =  n)
   
-  DK <- kern %*% Hsuper
+  DK <- kern * Hsuper
   
   return(DK)
 }
@@ -106,10 +107,11 @@ LevenMarq <- function(lambda, Gst, H, t, s) {
   
   tau <- 1e-3
   nu <- 2
-  r <- numeric(2 * n + nl)
-  Jr <- matrix(0, 2 * n + nl, ns)
+  r <- numeric(n + nl)
+  Jr <- matrix(0, n + nl, ns)
   i <- 0
   pf <- sqrt(lambda)
+  
   
   # Create the tridiagonal matrix L
   

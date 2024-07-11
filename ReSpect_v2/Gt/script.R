@@ -25,7 +25,7 @@ source("C:/Users/giorg/Documents/GitHub/RRespect/ReSpect_v2/Gt/LevenMarq.r")
 source("C:/Users/giorg/Documents/GitHub/RRespect/ReSpect_v2/Gt/LCurve.r")
 
 
-#setwd("C:/Users/giorg/Documents/GitHub/RRespect")
+#setwd("C:/Users/giorg/Documents/GitHub/RRespect/ReSpect_v2/Gt/")
 
 par=SetParameters()
 H=contSpec()
