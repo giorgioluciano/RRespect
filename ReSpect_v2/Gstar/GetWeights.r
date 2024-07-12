@@ -1,3 +1,5 @@
+library(pracma)
+
 GetWeights <- function(H, w, s) {
   # Function: GetWeights(input)
   #
@@ -21,21 +23,22 @@ GetWeights <- function(H, w, s) {
   hs[ns] <- 0.5 * log(s[ns] / s[ns-1])
   hs[2:(ns-1)] <- 0.5 * (log(s[3:ns]) - log(s[1:(ns-2)]))
 
+  res <- meshgrid (s, w)
+   S <- res$X
+   W <- res$Y
+  
+  
+  # Calcolo di ws e ws2
+  ws <- S * W
+  ws2 <- ws^2
+  
  
-  S <- outer(s, t, FUN = function(x, y) x)
-  T <- outer(s, t, FUN = function(x, y) y)
+  numerator <- rbind(ws2 / (1 + ws2), ws / (1 + ws2))
+  diag_hs_expH <- diag(hs * exp(H))
+  wij <- numerator %*% diag_hs_expH
+  K <- numerator %*% (hs * exp(H))
   
-  # Calcolo del kernel
-  kern <- exp(-T / S)
-  
-  # Pulizia delle variabili S e T (non necessaria in R)
-  rm(S, T)
-  
-  # Calcolo di wij e K
-  wij <- kern %*% diag(hs * exp(H))
-  K <- kern %*% (hs * exp(H))
-  
-  
+
   for (i in 1:(2 * n)) {
     wij[i, ] <- wij[i, ] / K[i]
   }

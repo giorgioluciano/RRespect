@@ -17,11 +17,16 @@
 LLS <- function(w, tau, Gexp) {
   n <- length(Gexp) / 2
   
-  S <- outer(tau, tau, FUN = function(x, y) x)
-  T <- outer(tau, tau, FUN = function(x, y) y)
+  res <-  meshgrid(tau,w)
+  X <- res$X
+  Y <- res$ Y
+  ws <- X  *Y 
+  ws2 <- ws^2
   
-  # Calcolo del kernel
-  K <- exp(-T / S)
+  head_K <- (ws2 / (1 + ws2))
+  tail_K <- (ws / (1 + ws2))
+ 
+   K <- cbind(head_K,tail_K)
   
   Kp <- diag(1 / Gexp) %*% K
   Kp <- as.matrix(Kp)
@@ -32,9 +37,10 @@ LLS <- function(w, tau, Gexp) {
   
   K <- exp(-T / S)
   
-  GtM <- K %*% g
+  GpM <- head_K *g
+  GppM <- tail_k*g
   
-  error <- sum((GtM / Gexp[1:n] - 1)^2)
+  error <- sum((GpM / Gexp[1:n] - 1)^2 + (GppM / Gexp[(n+1):(2*n)] - 1)^2)
   
   list(g = g, error = error, condKp = condKp)
 }

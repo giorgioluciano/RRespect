@@ -1,4 +1,4 @@
-library(splines)
+library(pracma)
 
 GridDensity <- function(x, px, N, Pt = FALSE) {
   # Function: GridDensity(input)
@@ -21,13 +21,15 @@ GridDensity <- function(x, px, N, Pt = FALSE) {
   #
   #  (c) Sachin Shanbhag, March 5, 2012
   #
-
   npts <- 100
-  xi <- seq(min(x), max(x), length.out = npts)
-  pint <- splinefun(x, px)(xi)
-  ci <- cumsum(pint) * diff(c(0, xi))
-  pint <- pint / tail(ci, 1)
-  ci <- ci / tail(ci, 1)
+  xi <- linspace(min(x), max(x),npts)
+  pint <- interp1(x, px,xi,'spline')
+  ci <- cumtrapz(xi,pint)
+  
+  pint <- pint/ci[npts]
+  ci <- ci/ci[npts]
+  
+  
 
   alfa <- 1 / (N - 1)
   zij <- numeric(N)
@@ -37,11 +39,13 @@ GridDensity <- function(x, px, N, Pt = FALSE) {
   z[N] <- max(x)
 
   beta <- seq(0.5, N - 1.5) * alfa
-  zij <- c(z[1], approx(ci, xi, beta)$y, z[N])
+  
+  
+  zij <- c(z[1], interp1(as.numeric(ci), as.numeric(xi), beta,'spline'), z[N])
   h <- diff(zij)
 
-  beta <- seq(1, N - 2) * alfa
-  z[2:(N - 1)] <- approx(ci, xi, beta)$y
+  beta <- seq(1, N - 2) * alfa #check why duplicate
+  z[2:(N - 1)] <- interp1(as.numeric(ci), as.numeric(xi), beta,'spline')
   
   
 

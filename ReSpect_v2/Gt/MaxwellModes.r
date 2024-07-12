@@ -1,62 +1,62 @@
 
 
-LLS <- function(w, tau, Gexp) {
-  n <- length(Gexp) / 2
-  X <- outer(tau, w, "*")
-  ws <- X
-  ws2 <- ws^2
+LLS <- function(t, tau, Gexp) {
+ 
   
-  head_K <- (ws2 / (1 + ws2))
-  tail_K <- (ws / (1 + ws2))
+  n <- length(Gexp)
   
-  K <- cbind(head_K, tail_K)
-  K <-t(K)
-  #check
-  
-  # Verify dimensions before multiplication
-  if (nrow(K) != length(Gexp)) {
-    stop("Dimension mismatch between K and Gexp")
-  }
+  res <- meshgrid(tau,t)
+  S <- res$X
+  T <- res$Y
   
   
-  Kp <- diag(1 / Gexp) %*% K
-  Kp <- as.matrix(Kp)
-  condKp  = pracma::cond(Kp)
+  K <- (exp(-T/S))
+  #rm(S, T)
+  
+  # gets (Gt/GtE - 1)^2, instead of  (Gt -  GtE)^2
+  
+  diag_matrix <- diag(1 / Gexp)
 
-  ones_matrix <- matrix(1, nrow = length(Gexp))
+# Moltiplicare la matrice diagonale per K
+  Kp <- diag_matrix %*% K
   
+  Kp <- as.matrix(Kp)
+  condKp <- pracma::cond(Kp)
   Gexp <- as.matrix(Gexp)
   g <- qr.solve(Kp, matrix(1, nrow = nrow(Gexp), ncol = 1))
   
-  GpM_nog <- t(ws2/(1+ws2))
-  GpM <- GpM_nog  %*% g
+  #rm(Kp)
   
-  GppM_nog <- t(ws/(1+ws2))
-  GppM <- GppM_nog  %*% g
-
-  error <- sum((GpM / Gexp[1:n] - 1)^2 + (GppM / Gexp[(n + 1):(2 * n)] - 1)^2)
+  GtM <- K %*% g
+  error <- sum((GtM / Gexp - 1)^2)
   
+  # Risultati
+  list(condKp = condKp, g = g, error = error)
   
-  list(g = g, error = error, condKp = condKp)
 }
 
 
-#maxwell_modes <- MaxwellModes(z, w, Gp, Gpp, par$prune)
+#maxwell_modes <- MaxwellModes(z, t, Gt, par$prune)
 
-MaxwellModes <- function(z, w, Gp, Gpp, prune = 0) {
+MaxwellModes <- function(z, t, Gt, prune = 0) {
+
   N <- length(z)
-  tau <- exp(z)
-  n <- length(w)
-  Gexp <- c(Gp, Gpp)
   
-  if (!prune) {
-    result <- LLS(w, tau, Gexp)
+  tau <- exp(z)
+  n <- length(t)
+  Gexp <- Gt
+  
+  prune <- ifelse(missing(prune), 0, prune)
+  
+  if (prune == 0) {
+    result <- LLS(t, tau, Gexp)
     g <- result$g
     error <- result$error
     condKp <- result$condKp
   } else {
     tau1 <- tau
-    result1 <- LLS(w, tau1, Gexp)
+    
+    result1 <- LLS(t, tau1, Gexp)
     g1 <- result1$g
     error1 <- result1$error
     condKp1 <- result1$condKp
@@ -67,7 +67,7 @@ MaxwellModes <- function(z, w, Gp, Gpp, prune = 0) {
     tau2 <- tau1
     tau2 <- tau2[-ineg]
     
-    result2 <- LLS(w, tau2, Gexp)
+    result2 <- LLS(t, tau2, Gexp)
     g2 <- result2$g
     error2 <- result2$error
     condKp2 <- result2$condKp
@@ -85,6 +85,8 @@ MaxwellModes <- function(z, w, Gp, Gpp, prune = 0) {
     }
   }
   
-  list(g = g, tau = tau, error = error, condKp = condKp)
+  return(list(g = g, tau = tau, error = error, condKp = condKp))
+  
+
 }
 
