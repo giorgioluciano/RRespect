@@ -3,7 +3,7 @@
 # 
 #  Input: Gexp = 2n*1 vector [Gp; Gpp],
 #         Hgs = guessed H,
-#         w = n*1 vector contains frequencies,
+#         t = n*1 vector contains frequencies,
 #         s = relaxation modes,
 #         SmoothFac = Indirect way of controlling lambda_C, Set between -1 
 #                    (lowest lambda explored) and 1 (highest lambda explored);
@@ -18,6 +18,7 @@
 lcurve <- function(Gexp, Hgs, t, s, SmoothFac) {
   
   npoints <- 40
+  
   lam_min <- 1e-12
   lam_max <- 1e+3
   
@@ -27,7 +28,6 @@ lcurve <- function(Gexp, Hgs, t, s, SmoothFac) {
   eta <- numeric(npoints)
   rho <- numeric(npoints)
   
-  # This step can be "parfor"ed if you have multicore
   
   for (i in 1:length(lam)) {
     lambda <- lam[i]

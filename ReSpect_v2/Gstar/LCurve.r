@@ -15,7 +15,7 @@
 # 
 #  Plot the L-curve. Can call the routine "corner.m" to find the elbow again
 
-lcurve <- function(Gexp, Hgs, t, s, SmoothFac) {
+lcurve <- function(Gexp, Hgs, w, s, SmoothFac) {
   
   npoints <- 40
   
@@ -31,8 +31,8 @@ lcurve <- function(Gexp, Hgs, t, s, SmoothFac) {
   
   for (i in 1:length(lam)) {
     lambda <- lam[i]
-    H <- LevenMarq(lambda, Gexp, Hgs, t, s)
-    rho[i] <- norm((1 - kernel(H, t, s) / Gexp), type = "2")
+    H <- LevenMarq(lambda, Gexp, Hgs, w, s)
+    rho[i] <- norm((1 - kernel(H, w, s) / Gexp), type = "2")
     eta[i] <- norm(diff(H, differences = 2), type = "2")
   }
   

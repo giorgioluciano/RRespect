@@ -95,9 +95,9 @@ discSpec <- function(par = NULL) {
   }
   
   # Send the best data-set stats
-  resgrid <- GridDensity(log(s), wt, Nopt)
-  z <- resgrid$z
-  hz <- resgrid$hz
+  grid <- GridDensity(log(s), wt, Nopt)
+  z <- grid$z
+  hz <- grid$hz
   maxwell_modes <- MaxwellModes(z, w, Gp, Gpp, par$prune)
   g <- maxwell_modes$g
   tau <- maxwell_modes$tau

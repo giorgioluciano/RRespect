@@ -16,10 +16,10 @@ PlotMaxwellModes <- function(g, tau, t, Gt) {
   
   S =res$X
   T= res$Y
-    
+  
+  
   K <- (exp(-T/S))
   GtM <- K %*% g
-  
   plot(t, Gt, log = "xy", pch = 16, col = "blue", xlab = "t", ylab = "Gt", main = "Log-log plot")
   lines(t, GtM, col = "black", lwd = 2)
   

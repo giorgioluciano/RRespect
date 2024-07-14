@@ -62,7 +62,7 @@ discSpec <- function(par = NULL) {
   ev <- numeric(length(Nv))
   condN <- numeric(length(Nv))
   
-  for (i in 1:length(npts)) {
+  for (i in 1:npts) {
     N <- Nv[i]
     grid <- GridDensity(log(s), wt, N) #check 
     z <- grid$z
@@ -125,8 +125,8 @@ discSpec <- function(par = NULL) {
     # K = kernel(H,t,s);
     # loglog(w,K[1:n],'r-','LineWidth',2); hold on
     # loglog(w,K[n+1:2*n],'r-','LineWidth',2);
-    #xlab('t')
-    #ylab('G(t)')
+    # xlab('t')
+    # ylab('G(t)')
     # hold off
   }
   

@@ -39,12 +39,8 @@ GetResidualJacobian <- function(pf, L, Gst, H, w, s) {
   
   # Furnish the Jacobian Jr
   # (2n+nl)*ns matrix
-  
-  
+    
   Kmatrix <- matrix(1/Gst, nrow = 2*n, ncol = ns) / sqrt(n)
-  
-  
-  
   head_Jr <- -kernelD(H, w, s) * Kmatrix
   tail_Jr <- pf * L / sqrt(nl)
   
@@ -63,7 +59,10 @@ kernelD <- function(H, w, s) {
   
   n <- length(w)
   
-  ws <- outer(w, s, "*")
+  res <- meshgrid(s,w)
+  S <- res$X 
+  W <- res$Y
+  ws <- S * W
   ws2 <- ws^2
   Hsuper <- matrix(exp(H), nrow = 2 * n, ncol = ns, byrow = TRUE) * rep(hs, each = 2 * n)
   
@@ -86,20 +85,20 @@ kernel <- function(H, w, s) {
   ns <- length(s)
   hs <- numeric(ns)
   
-  # Uses trapezoidal rule for integration
   hs[1] <- 0.5 * log(s[2] / s[1])
   hs[ns] <- 0.5 * log(s[ns] / s[ns - 1])
-  
   hs[2:(ns - 1)] <- 0.5 * (log(s[3:ns]) - log(s[1:(ns - 2)]))
   
-  # Create meshgrid equivalent
-  ws <- outer(w, s, "*")
+  res <- meshgrid(s,w)
+  S <- res$X 
+  W <- res$Y
+  ws <- S * W
   ws2 <- ws^2
   
   # Calculate K
   K <- c((ws2 / (1 + ws2)) %*% (hs * exp(H)), (ws / (1 + ws2)) %*% (hs * exp(H)))
-  
   return(K)
+  
 }
 
 

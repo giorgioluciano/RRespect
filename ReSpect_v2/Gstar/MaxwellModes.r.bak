@@ -48,6 +48,7 @@ MaxwellModes <- function(z, w, Gp, Gpp, prune = FALSE) {
     error2 <- result2$error
     condKp2 <- result2$condKp
     
+    # Compare conditions and errors to decide final values
     if (condKp2 < condKp1 && (error2/error1 - 1) < 0.05) {
       g <- g2
       error <- error2
@@ -80,6 +81,7 @@ LLS <- function(w, tau, Gexp) {
   
   diag_matrix <- diag(1 / Gexp)
   
+  # Moltiplicare la matrice diagonale per K
   Kp <- diag_matrix %*% K
   
   Kp <- as.matrix(Kp)

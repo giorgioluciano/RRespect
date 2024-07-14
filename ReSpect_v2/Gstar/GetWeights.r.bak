@@ -17,7 +17,7 @@ GetWeights <- function(H, w, s) {
 
 
   ns <- length(s)
-  n <- length(w)
+  n <- length(t)
 
   hs <- numeric(ns)
   wt <- numeric(ns)

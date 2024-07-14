@@ -1,3 +1,6 @@
+library(pracma)
+
+GridDensity <- function(x, px, N, Pt = FALSE) {
   # Function: GridDensity(input)
   #
   # Takes in a PDF or density function, and spits out a bunch of points in
@@ -18,11 +21,6 @@
   #
   #  (c) Sachin Shanbhag, March 5, 2012
   #
-
-library(pracma)
-
-GridDensity <- function(x, px, N, Pt = FALSE) {
-
   npts <- 100
   xi <- linspace(min(x), max(x),npts)
   pint <- interp1(x, px,xi,'spline')

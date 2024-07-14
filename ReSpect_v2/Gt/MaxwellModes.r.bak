@@ -1,18 +1,4 @@
-#
-# Function: MaxwellModes(input)
-#
-# Solves the linear least squares problem to obtain the DRS
-#
-# Input: z = points distributed according to the density,
-#        t  = n*1 vector contains times,
-#        Gt = n*1 vector contains G(t),
-#
-#        Prune = Avoid modes with -ve weights (=1), or don't care (0) 
-#
-# Output: g, tau = spectrum  (array)
-#         error = relative error between the input data and the G(t) inferred from the DRS
-#         condKp = condition number
-#
+
 
 LLS <- function(t, tau, Gexp) {
  
@@ -30,7 +16,10 @@ LLS <- function(t, tau, Gexp) {
   # gets (Gt/GtE - 1)^2, instead of  (Gt -  GtE)^2
   
   diag_matrix <- diag(1 / Gexp)
+
+# Moltiplicare la matrice diagonale per K
   Kp <- diag_matrix %*% K
+  
   Kp <- as.matrix(Kp)
   condKp <- pracma::cond(Kp)
   Gexp <- as.matrix(Gexp)
@@ -52,6 +41,7 @@ LLS <- function(t, tau, Gexp) {
 MaxwellModes <- function(z, t, Gt, prune = 0) {
 
   N <- length(z)
+  
   tau <- exp(z)
   n <- length(t)
   Gexp <- Gt
@@ -59,15 +49,13 @@ MaxwellModes <- function(z, t, Gt, prune = 0) {
   prune <- ifelse(missing(prune), 0, prune)
   
   if (prune == 0) {
-
     result <- LLS(t, tau, Gexp)
     g <- result$g
     error <- result$error
     condKp <- result$condKp
-
   } else {
-
     tau1 <- tau
+    
     result1 <- LLS(t, tau1, Gexp)
     g1 <- result1$g
     error1 <- result1$error

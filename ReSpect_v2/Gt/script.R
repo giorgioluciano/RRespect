@@ -16,6 +16,7 @@ source("I:/giorgioluciano.github.io/RRespect/ReSpect_v2/Gt/GetWeights.r")
 source("I:/giorgioluciano.github.io/RRespect/ReSpect_v2/Gt/GridDensity.r")
 source("I:/giorgioluciano.github.io/RRespect/ReSpect_v2/Gt/MaxwellModes.r")
 source("I:/giorgioluciano.github.io/RRespect/ReSpect_v2/Gt/PlotMaxwellModes.r")
+source("I:/giorgioluciano.github.io/RRespect/ReSpect_v2/Gt/SetParameters.r")
 
 
 #GTSTAR

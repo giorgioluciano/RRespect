@@ -12,15 +12,14 @@ PlotMaxwellModes <- function(g, t, w, Gp, Gpp) {
   N <- length(g)
   
   # Create a grid of t and w
-  res <- pracma::meshgrid(t,w)
-  X <- res$X
-  Y <- res$Y
+  X <- matrix(rep(t, each = length(w)), nrow = length(w), ncol = N)
+  Y <- matrix(rep(w, N), nrow = length(w), ncol = N)
   ws <- X * Y
   ws2 <- ws^2
   
   # Compute GpM and GppM
-  GpM <-  (ws2 / (1 + ws2) * g
-  GppM <- (ws / (1 + ws2)  * g
+  GpM <- rowSums((ws2 / (1 + ws2)) * g)
+  GppM <- rowSums((ws / (1 + ws2)) * g)
   
   # Plotting using log-log scale
   plot(w, Gp, log = "xy", col = "blue", pch = 1, xlab = "Frequency", ylab = "Modulus", type = "b", lwd = 2)

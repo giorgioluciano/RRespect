@@ -23,14 +23,10 @@ GetWeights <- function(H, t, s) {
  
 
   u=t  
-  resgrid <- meshgrid(s,u)
-  S <- resgrid$X
-  T <- resgrid$Y
+  S <- outer(s, rep(1, length(t)))
+  T <- outer(rep(1, length(s)), u)
   
   kern <- t(exp(-T/S))
-  
-  # rm(S)
-  # rm(T)
   
   wij <-  kern %*% diag(hs * exp(H))
   K <- kern %*% (hs * exp(H))

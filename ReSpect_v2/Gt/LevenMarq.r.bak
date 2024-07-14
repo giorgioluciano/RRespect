@@ -26,7 +26,6 @@ GetResidualJacobian <- function(pf, L, Gst, H, t, s) {
   n <- length(t)
   ns <- length(s)
   nl <- ns - 2
-  
   r <- numeric(n + nl)
   Jr <- matrix(0, nrow = n + nl, ncol = ns)
   
@@ -48,6 +47,7 @@ GetResidualJacobian <- function(pf, L, Gst, H, t, s) {
   tail_Jr <- pf * L / sqrt(nl)
   
   Jr <- rbind(head_Jr,tail_Jr)
+  # Restituisci una lista con r e Jr
   return(list(r = res, Jr = Jr))
 }
 
@@ -107,7 +107,6 @@ LevenMarq <- function(lambda, Gst, H, t, s) {
   
   tau <- 1e-3
   nu <- 2
-  
   r <- numeric(n + nl)
   Jr <- matrix(0, n + nl, ns)
   i <- 0
@@ -144,8 +143,7 @@ LevenMarq <- function(lambda, Gst, H, t, s) {
     if (rho > 0) {
       H <- Hnew
       residuals_and_jacobian <- GetResidualJacobian(pf, L, Gst, H, t, s)
-     
-	 r <- residuals_and_jacobian$r
+      r <- residuals_and_jacobian$r
       Jr <- residuals_and_jacobian$Jr
       
       mu <- mu * max(1 / 3, 1 - (2 * rho - 1)^3)

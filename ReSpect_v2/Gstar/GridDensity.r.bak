@@ -24,9 +24,8 @@ GridDensity <- function(x, px, N, Pt = FALSE) {
 
   npts <- 100
   xi <- seq(min(x), max(x), length.out = npts)
-  pint <- splinefun(x, px)(xi
-  # pint = interp1(x,px,xi,'spline')
-  ci <- cumtrapz(xi,pint)
+  pint <- splinefun(x, px)(xi)
+  ci <- cumsum(pint) * diff(c(0, xi))
   pint <- pint / tail(ci, 1)
   ci <- ci / tail(ci, 1)
 
