@@ -1,28 +1,32 @@
+# Function PlotMaxwellModes
+#
+# Plots and compares experimental G(t) with that obtained from the
+# corresponding DRS
+#
+# Input: g, tau = spectrum (array)
+#        t  = n*1 vector contains times,
+#        Gt = n*1 vector contains G(t),
+#
+
 PlotMaxwellModes <- function(g, tau, t, Gt) {
-  # Function PlotMaxwellModes(input)
-  #
-  # Plots experimental dynamic moduli and dynamic moduli obtained from the
-  # corresponding CRS
-  #
-  # Input: g, t = spectrum
-  #        w = n*1 vector contains frequencies,
-  #        Gp, Gpp
-  #
-
-  N <- length(g)
-
-  # Create a grid of t and w
-  res <- meshgrid(tau,t)
   
-  S =res$X
-  T= res$Y
-    
-  K <- (exp(-T/S))
+  N <- length(g)
+  
+  # Create the kernel matrix
+  K <- outer(t, tau, function(T, S) exp(-T / S))
+  
+  # Compute the model G(t) from the Maxwell modes
   GtM <- K %*% g
   
-  plot(t, Gt, log = "xy", pch = 16, col = "blue", xlab = "t", ylab = "Gt", main = "Log-log plot")
+  # Plot the experimental and model G(t)
+  plot(t, Gt, log = "xy", col = "blue", pch = 16, xlab = "Time", ylab = "G(t)", main = "Comparison of Experimental and Model G(t)")
   lines(t, GtM, col = "black", lwd = 2)
-  
-  # Aggiunta della legenda
-  legend("topright", legend = c("Gt", "GtM"), col = c("blue", "black"), lty = c(NA, 1), pch = c(16, NA), lwd = c(NA, 2))
 }
+
+# Example usage
+# Assuming g, tau, t, and Gt are defined elsewhere in your R script
+# g <- ... # Define the spectrum array
+# tau <- ... # Define the relaxation times array
+# t <- ... # Define the times array
+# Gt <- ... # Define the experimental G(t) array
+# PlotMaxwellModes(g, tau, t, Gt)
