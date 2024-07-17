@@ -53,9 +53,9 @@ contSpec <- function(par) {
   if (par$lamC == 0) {
     result_lcurve <- lcurve(Gexp, Hgs, t, s, par$SmFacLam)
     lamC <- result_lcurve$lamC
-    lam <- lcurve_result$lam
-    rho <- lcurve_result$rho
-    eta <- lcurve_result$eta
+    lam <- result_lcurve$lam
+    rho <- result_lcurve$rho
+    eta <- result_lcurve$eta
   } else {
     lamC <- par$lamC
   }
