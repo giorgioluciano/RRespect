@@ -16,6 +16,7 @@ InitializeH <- function(Gexp, t, s) {
   H <- -5.0 + sin(pi * s)
   
   lambda <- 1e0
+  
   Hlam <- LevenMarq(lambda, Gexp, H, t, s)
   
   # Successively improve the initial guess until you have a reasonably good

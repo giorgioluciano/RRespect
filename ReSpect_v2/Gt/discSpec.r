@@ -82,6 +82,7 @@ discSpec <- function(par) {
     condN[i] <- data_gtau$condKp
   }
   
+  
   # Determine optimal number of modes (Nopt)
   if (par$Nopt > 0) {
     Nopt <- par$Nopt
@@ -94,6 +95,7 @@ discSpec <- function(par) {
     condNmin <- min(condN)
     
     cost <- (1 - par$condWt) * (ev - emin)^2 + par$condWt * (log(condN / condNmin))^2
+    print(cost)
     idx_min <- which.min(cost)
     Nopt <- Nv[idx_min]
     

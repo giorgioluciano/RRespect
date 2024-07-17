@@ -19,6 +19,65 @@
 #  Manolis I. A. Lourakis"
 #
 
+# Function: kernel
+#
+# outputs the n*1 dimensional vector K(H)(t) which is comparable to Gexp = Gt
+# modifying kernel for unevenly spaced s_i
+#
+# Input: H = substituted CRS,
+#        t = n*1 vector contains times,
+#        s = relaxation modes
+#
+
+kernel <- function(H, t, s) {
+  
+  ns <- length(s)
+  hs <- numeric(ns)
+  
+  # Integration uses trapezoidal rule
+  hs[1] <- 0.5 * log(s[2] / s[1])
+  hs[ns] <- 0.5 * log(s[ns] / s[ns - 1])
+  hs[2:(ns - 1)] <- 0.5 * (log(s[3:ns]) - log(s[1:(ns - 2)]))
+  
+  res <- meshgrid(s,t)
+  
+  S <- res$X
+  T <- res$Y 
+  
+  kern = exp(-T/S)
+  
+  K <- kern %*% (hs * exp(H))
+  
+  return(K)
+}
+
+
+kernelD <- function(H, t, s) {
+  
+  ns <- length(s)
+  hs <- numeric(ns)
+  hs[1] <- 0.5 * log(s[2] / s[1])
+  hs[ns] <- 0.5 * log(s[ns] / s[ns-1])
+  hs[2:(ns-1)] <- 0.5 * (log(s[3:ns]) - log(s[1:(ns-2)]))
+  
+  n <- length(t)
+  
+  res <- meshgrid(s,t)
+  S =res$X
+  T =res$Y
+  
+  kern= exp(-T/S)
+  
+  
+  Hsuper <- t(matrix(rep(hs * exp(H), each = n), nrow = n, ncol = ns, byrow = TRUE))
+  
+  DK <- kern * Hsuper
+  #ok
+  
+  return(DK)
+}
+
+
 LevenMarq <- function(lambda, Gst, H, t, s) {
   
   n <- length(t)
@@ -113,10 +172,11 @@ GetResidualJacobian <- function(pf, L, Gst, H, t, s) {
   # Get the residual vector first
   r[1:n] <- (1 - kernel(H, t, s) / Gst) / sqrt(n)
   r[(n+1):(n+nl)] <- pf * diff(H, differences = 2) / sqrt(nl)
-  
+  #ok
   if (exists("Jr")) {
     
     Kmatrix <- (1 / Gst) * matrix(1, n, ns) / sqrt(n)
+    #ok
     Jr[1:n, ] <- -kernelD(H, t, s) * Kmatrix
     Jr[(n+1):(n+nl), ] <- pf * L / sqrt(nl)
     
@@ -125,4 +185,5 @@ GetResidualJacobian <- function(pf, L, Gst, H, t, s) {
   return(list(r = r, Jr = Jr))
   
 }
+
 

@@ -33,7 +33,8 @@ MaxwellModes <- function(z, t, Gt, prune = 0) {
     condKp1 <- result1$condKp
     
     ineg <- which(g1 < 0)
-    tau2 <- tau1[-ineg]
+    tau2 <- tau1
+    tau2 <- tau2[-ineg]
     
     result2 <- LLS(t, tau2, Gexp)
     g2 <- result2$g
@@ -60,10 +61,15 @@ MaxwellModes <- function(z, t, Gt, prune = 0) {
 LLS <- function(t, tau, Gexp) {
   
   n <- length(Gexp)
-  K <- outer(t, tau, function(T, S) exp(-T / S))
+  
+  res <- meshgrid(tau,t)
+  S <- res$X
+  T <- res$Y
+  
+  K = exp(-T/S)
   
   Kp <- diag(1 / Gexp) %*% K
-  condKp <- kappa(Kp)
+  condKp <- pracma::cond(Kp)
   g <- qr.solve(Kp, rep(1, n))
   
   GtM <- K %*% g
