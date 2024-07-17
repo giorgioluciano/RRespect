@@ -1,3 +1,5 @@
+library(pracma)
+
 source("~/GitHub/RRespect/ReSpect_v2/Gt/contSpec.r")
 source("~/GitHub/RRespect/ReSpect_v2/Gt/SetParameters.r")
 source("~/GitHub/RRespect/ReSpect_v2/Gt/GetExpData.r")
@@ -6,7 +8,7 @@ source("~/GitHub/RRespect/ReSpect_v2/Gt/LevenMarq.r")
 source("~/GitHub/RRespect/ReSpect_v2/Gt/LCurve.r")
 
 
-#setwd(~/GitHub/RRespect/ReSpect_v2/Gt")
+setwd("~/GitHub/RRespect/ReSpect_v2/Gt")
 
 par=SetParameters()
 H=contSpec()

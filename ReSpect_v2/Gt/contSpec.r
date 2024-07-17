@@ -1,4 +1,4 @@
-
+library(pracma)
 contSpec <- function(par) {
   
    # Carica le impostazioni globali se par non è fornito
@@ -53,11 +53,14 @@ contSpec <- function(par) {
   if (par$lamC == 0) {
     result_lcurve <- lcurve(Gexp, Hgs, t, s, par$SmFacLam)
     lamC <- result_lcurve$lamC
+    lam <- lcurve_result$lam
+    rho <- lcurve_result$rho
+    eta <- lcurve_result$eta
   } else {
     lamC <- par$lamC
   }
   
-  # Ottieni lo spettro
+  
   if (par$verbose) {
     cat(sprintf('%e\n(*) Extracting the continuous spectrum, ...', lamC))
   }
@@ -68,8 +71,10 @@ contSpec <- function(par) {
   if (par$verbose) {
     cat('done\n(*) Writing and Printing, ...')
     
+    print(result_lcurve$rho_eta)
+    
     if (par$lamC == 0) {
-      write.table(result_lcurve$rho_eta, file = 'output/rho-eta.dat', row.names = FALSE, col.names = FALSE)
+      write.table(data.frame(lam = lam, rho = rho, eta = eta), file = "output/rho-eta.dat", row.names = FALSE, col.names = FALSE, quote = FALSE)
     }
     
     write.table(data.frame(s = s, H = H), file = 'output/H.dat', row.names = FALSE, col.names = FALSE)

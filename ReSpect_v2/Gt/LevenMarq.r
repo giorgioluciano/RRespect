@@ -44,9 +44,9 @@ kernel <- function(H, t, s) {
   S <- res$X
   T <- res$Y 
   
-  Kern = exp(-T/S)
+  kern = exp(-T/S)
   
-  K <- Kern * (hs %*% exp(H))
+  K <- kern %*% (hs * exp(H))
   
   return(K)
 }
@@ -64,14 +64,15 @@ kernelD <- function(H, t, s) {
   
   res <- meshgrid(s,t)
   S =res$X
-  Y =res$Y
+  T =res$Y
   
   kern= exp(-T/S)
   
   
-  Hsuper <- matrix(rep(hs * exp(H), each = n), nrow = n, ncol = ns, byrow = TRUE)
+  Hsuper <- t(matrix(rep(hs * exp(H), each = n), nrow = n, ncol = ns, byrow = TRUE))
   
   DK <- kern * Hsuper
+  #ok
   
   return(DK)
 }
@@ -171,10 +172,11 @@ GetResidualJacobian <- function(pf, L, Gst, H, t, s) {
   # Get the residual vector first
   r[1:n] <- (1 - kernel(H, t, s) / Gst) / sqrt(n)
   r[(n+1):(n+nl)] <- pf * diff(H, differences = 2) / sqrt(nl)
-  
+  #ok
   if (exists("Jr")) {
     
     Kmatrix <- (1 / Gst) * matrix(1, n, ns) / sqrt(n)
+    #ok
     Jr[1:n, ] <- -kernelD(H, t, s) * Kmatrix
     Jr[(n+1):(n+nl), ] <- pf * L / sqrt(nl)
     

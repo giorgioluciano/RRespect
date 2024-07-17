@@ -63,7 +63,7 @@ LLS <- function(t, tau, Gexp) {
   K <- outer(t, tau, function(T, S) exp(-T / S))
   
   Kp <- diag(1 / Gexp) %*% K
-  condKp <- kappa(Kp)
+  condKp <- pracma::cond(Kp)
   g <- qr.solve(Kp, rep(1, n))
   
   GtM <- K %*% g
