@@ -1,29 +1,58 @@
-function [time2, strain, strainRt , tau12t2, ElStr, VisStr] = KBKZmodelSimpsonLissajous(para)
 
-% KBKZ model from Song 2020 
+Per prima cosa ho dei file .dat che sono fatti in questo modo 
 
-[taui, gi] = taugcal(0.256, 9963/7537*4775.94, 3.162, 0.001, 15);
+
+(*) Condition number of matrix equation: 5.790826e+04
+
+		Modes
+		-----
+
+i 	    g(i) 	    tau(i)
+---------------------------------------
+1 	 7.93134e+05 	 2.49924e-06
+2 	 1.75854e+05 	 7.28622e-05
+3 	 1.26539e+05 	 4.15941e-04
+4 	 1.38825e+04 	 5.24859e-03
+5 	 5.65946e+03 	 9.51563e-02
+6 	 3.92839e+03 	 7.07899e-01
+7 	 1.10556e+03 	 2.09368e+00
+8 	 3.90686e+00 	 1.30013e+02
+
+la funzione deve caricare gi e taui e sostituirla nel codice che ti dico dopo 
+
+gi = [177464	54980	35272.4	22493.7	16039.9	13572.9	9004.74 ...
+    6926.17	527.529	2.7341  ];
+
+taui = [0.00020788	0.00288704	0.0234895	0.163525	1.03726 ...
+    5.24526	15.6349	35.5925	167.211	4810.48];
+
 
 warning('off');
 PointsPerPeriod = 125;
-NoPeriods = 200;
-CutPeriods = 100;
+NoPeriods = 400;
+CutPeriods = 300;
 
 etai = taui.*gi;
 
 omega = para(1);
 Amp = para(2);
-a = para(3);
+aSos = para(3);
+bSos = para(4);
 mint = 0;
 maxt = 2*pi/omega*NoPeriods;
 tspan = [mint maxt];
 tstep=2*pi/omega/PointsPerPeriod;
 
 time = mint:tstep:maxt;
+
 dim = size(time, 2);
+
 tau12 = zeros(1, dim);
-PreSum = @(tp, t) Amp.*(sin(omega*t )-sin(omega*tp))./(1+a*Amp^2.*...
-        (sin(omega*t) - sin(omega*tp)).^2);
+
+PreSum = @(tp, t) Amp.*(sin(omega*t )-sin(omega*tp)) .*...
+        1.0 ./(1.0+aSos .*(abs( Amp.*(sin(omega*t )- ...
+        sin(omega*tp)) )).^bSos );
+    
 Integrand = @(tp, t, PreSumn) PreSumn.*sum(gi./taui.*exp(-(t-tp)./taui) );
 
 SimpsonOdd = @(integrand, h) (integrand(1) + ... 
@@ -87,7 +116,7 @@ P2 = abs(Y/L);
 P1 = P2(1:L/2+1);
 P1(2:end-1) = 2*P1(2:end-1);
 
-f = 2*pi*Fs*(0:(L/2))/L;
+aSos = 2*pi*Fs*(0:(L/2))/L;
 % plot(f,P1) 
 % title('Single-Sided Amplitude Spectrum of X(t)')
 % xlabel('f (Hz)');
@@ -95,7 +124,7 @@ f = 2*pi*Fs*(0:(L/2))/L;
 % axis([0 6 0 100] );
 % axis 'auto y';
 harmInd = 1:2:61;
-harmonics = interp1(f,P1, harmInd);
+harmonics = interp1(aSos,P1, harmInd);
 
 harmonics = harmonics/Amp;
 % disp('abs harmonics')
@@ -105,7 +134,7 @@ P2r = real(Y/L);
 P1r = P2r(1:L/2+1);
 P1r(2:end-1) = 2*P1r(2:end-1);
 
-harmonics = interp1(f,P1r, harmInd);
+harmonics = interp1(aSos,P1r, harmInd);
 harmonicsR = harmonics/Amp;
 % disp('real modulus harmonics')
 % disp(harmonicsR/Amp);
@@ -114,7 +143,7 @@ P2i = imag(Y/L);
 P1i = P2i(1:L/2+1);
 P1i(2:end-1) = 2*P1i(2:end-1);
 
-harmonics = interp1(f,P1i, harmInd);
+harmonics = interp1(aSos,P1i, harmInd);
 harmonicsI = -harmonics/Amp;
 % disp('imaginary Modulus harmonics')
 % disp(harmonicsI/Amp);
@@ -122,8 +151,8 @@ harmonicsI = -harmonics/Amp;
 % saveas(gcf, 'fourierexample.pdf');
 
 delta = atan(harmonicsR(1)/harmonicsI(1));
-time2 = time(PointsPerPeriod*199+1 :end);
-tau12t2 = tau12t(PointsPerPeriod*199 + 1: end) ;
+time2 = time(PointsPerPeriod*(NoPeriods-1)+1 :end);
+tau12t2 = tau12t(PointsPerPeriod*(NoPeriods) + 1: end) ;
 
 strain = Amp*sin(omega.*time2 );
 strainRt = Amp*omega*cos(omega.*time2 );
