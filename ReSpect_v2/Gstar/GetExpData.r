@@ -7,7 +7,7 @@
 #
 # Output: A n*1 vector "w", and a 2n*1 vector Gexp = [Gp; Gpp]
 
-GetExpData <- function(fname, smooth = FALSE) {
+GetExpData <- function(fname, smooth = TRUE) {
   # Read the data from the file
   data <- read.table(fname, header = FALSE)
   

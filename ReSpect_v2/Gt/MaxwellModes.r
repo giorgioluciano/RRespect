@@ -69,9 +69,10 @@ LLS <- function(t, tau, Gexp) {
   K = exp(-T/S)
   
   Kp <- diag(1 / Gexp) %*% K
-  condKp <- pracma::cond(Kp)
+  condKp <- kappa(Kp)
   g <- qr.solve(Kp, rep(1, n))
   
+
   GtM <- K %*% g
   error <- sum((GtM / Gexp - 1)^2)
   

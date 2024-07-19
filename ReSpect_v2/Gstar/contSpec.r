@@ -102,11 +102,11 @@ contSpec <- function(par = NULL) {
   }
 
   if (par$plotting) {
-   
+    par(mfrow = c(2, 1))
     plot(s, H, type = "o", log = "x", xlab = "s", ylab = "H(s)", main = "H")
     K <- kernel(H, w, s)
 	
-	windows() #change depending on your OS
+
     plot(w, Gexp[1:n], type = "p", log = "xy", xlab = "w", ylab = "G*(exp), G*(fit)", main = "Gp", col = "red")
     points(w, K[1:n], type = "l", col = "black")
     points(w, Gexp[(n + 1):(2 * n)], type = "p", col = "blue")

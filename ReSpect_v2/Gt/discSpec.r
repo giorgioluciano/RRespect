@@ -117,7 +117,7 @@ discSpec <- function(par) {
   if (par$plotting) {
     par(mfrow = c(2, 1))
     
-    plot(tau, g, type = 'o', xlab = 'tau', ylab = 'g')
+    plot(tau, g,log="xy", type = 'o', xlab = 'tau', ylab = 'g')
     
     PlotMaxwellModes(g, tau, t, Gt)
     
