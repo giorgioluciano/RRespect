@@ -47,7 +47,7 @@ plot_lissajous_curves <- function(file_path, omega_v, amp_v) {
 }
 
 # Example usage:
-file_path <- "C:/Users/wahab/Dropbox/My PC (Arsenal)/ErrorCalc/Round2/WWF_30_8_FMM/WWF_62%_LAOS/"
+file_path <- "C:/temp/WWF_30_8_FMM/WWF_62%_LAOS/"
 omega_v <- c(1, 10, 50, 100)
 amp_v <- c(0.05, 0.25, 0.5, 1.0, 2.0)
 

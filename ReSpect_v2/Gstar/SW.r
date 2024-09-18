@@ -1,38 +1,30 @@
 library(minpack.lm)
 
 
-# Funzione del modello
-soskey_model <- function(gamma, a, b) {
-  1 / (1 + (a * gamma)^b)
+
+soskey_model <- function(w, a, b) {
+  1 / (1 + (a * abs(w)^b))
 }
 
-# Supponiamo di avere questi dati sperimentali (dovrai sostituirli con i tuoi dati reali)
-gamma <- data1$V1
-h_experimental <- data1$V2
+data <- data.frame(w = w, h = h)
 
-# Creazione del dataframe
-data <- data.frame(gamma = gamma, h = h_experimental)
-
-# Fit del modello
-fit <- nlsLM(h ~ soskey_model(gamma, a, b),
+fit <- nlsLM(h ~ soskey_model(w, a, b),
              data = data,
-             start = list(a = 0.1, b = 0.5))
+             start = list(a = 0.9, b = 0.5))
 
-# Riepilogo dei risultati
 summary(fit)
 
-# Estrazione dei parametri stimati
 a_fitted <- coef(fit)["a"]
 b_fitted <- coef(fit)["b"]
 
-# Creazione di un grafico per visualizzare il fit
-gamma_range <- seq(min(gamma), max(gamma), length.out = 100)
-h_fitted <- soskey_model(gamma_range, a_fitted, b_fitted)
 
-plot(gamma, h_experimental, log = "x", pch = 16, 
-     xlab = "gamma", ylab = "h(gamma)", 
+w_range <- seq(min(w), max(w), length.out = 100)
+h_fitted <- soskey_model(w_range, a_fitted, b_fitted)
+
+plot(w, h, log = "x", pch = 16, 
+     xlab = "w", ylab = "h(w)", 
      main = "Fit del modello di Soskey")
-lines(gamma_range, h_fitted, col = "red")
+lines(w_range, h_fitted, col = "red")
 legend("topright", legend = c("Dati sperimentali", "Modello fittato"), 
        pch = c(16, NA), lty = c(NA, 1), col = c("black", "red"))
 

@@ -5,7 +5,7 @@ soskey_model <- function(gamma, a, b) {
   1 / (1 + (a * gamma)^b)
 }
 
-# Supponiamo di avere questi dati sperimentali (dovrai sostituirli con i tuoi dati reali)
+
 gamma <- dataset1$V1
 h_experimental <- dataset1$V2
 

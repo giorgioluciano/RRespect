@@ -117,5 +117,5 @@ contSpec <- function(par = NULL) {
     cat("done\n(*) End\n")
   }
 
-  return(list(H = H, lamC = lamC))
+  return(list(H = H, lamC = lamC, w=w, Gexp=Gexp, s=s,K=K))
 }
