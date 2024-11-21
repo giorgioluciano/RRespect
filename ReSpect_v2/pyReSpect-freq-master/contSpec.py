@@ -57,7 +57,7 @@ def getAmatrix(ns):
 def getBmatrix(H, kernMat, Gexp, wexp, *argv):
     """get the Bmatrix required for error analysis; helper for lcurve()
        not explicitly accounting for G0 in Jr because otherwise I get underflow problems"""
-    n   = int(len(Gexp)/2);#######different from time
+    n   = int(len(Gexp)/2);
     ns  = len(H);
     nl  = ns - 2;
     r   = np.zeros(n);   	  # vector of size (n);
@@ -77,7 +77,43 @@ def getBmatrix(H, kernMat, Gexp, wexp, *argv):
 
     return B
 
+# def oldLamC(par, lam, rho, eta):
 
+# 	#
+# 	# 8/1/2018: Making newer strategy more accurate and robust: dividing by minimum rho/eta
+# 	# which is not as sensitive to lam_min, lam_max. This makes lamC robust to range of lam explored
+# 	#
+# 	#er = rho/np.amin(rho) + eta/np.amin(eta);
+# 	er    = rho/np.amin(rho) + eta/(np.sqrt(np.amax(eta)*np.amin(eta)));
+
+# 	#
+# 	# Since rho v/s lambda is smooth, we can interpolate the coarse mesh to find minimum
+# 	#
+# 	# change 3/20/2019: Scipy 0.17 has a bug with extrapolation: so making lami tad smaller 
+# 	lami = np.logspace(np.log10(min(lam)+1e-15), np.log10(max(lam)-1e-15), 1000)
+# 	erri = np.exp(interp1d(np.log(lam), np.log(er), kind='cubic', bounds_error=False,
+# 	                   fill_value=(np.log(er[0]), np.log(er[-1])))(np.log(lami)))
+
+
+# 	ermin = np.amin(erri)
+# 	eridx = np.argmin(erri)	
+# 	lamC  = lami[eridx]
+        
+# 	#
+# 	# 2/2: Copying 12/18 edit from pyReSpect-time;
+# 	#      for rough data have cutoff at rho = rho_cutoff?
+# 	#
+# 	rhoF  = interp1d(lam, rho, bounds_error=False, fill_value=(rho[0], rho[-1]))
+
+# 	if  rhoF(lamC) <= par['rho_cutoff']:
+# 		try:
+# 			eridx = (np.abs(rhoF(lami) - par['rho_cutoff'])).argmin()
+# 			if lami[eridx] > lamC:
+# 				lamC = lami[eridx]				
+# 		except:
+# 			pass
+
+# 	return lamC
 
 def lcurve(Gexp, wexp, Hgs, kernMat, par, *argv):
     """
@@ -238,7 +274,7 @@ def residualLM(H, lam, Gexp, wexp, kernMat):
         r[0:2*n] = wexp * (1. - kernel_prestore(H,kernMat)/Gexp)
     
     # the curvature constraint is not affected by G0	
-    r[2*n:2*n+nl] = np.sqrt(lam) * np.diff(H, n=2)  # second derivative check difference from time-master
+    r[2*n:2*n+nl] = np.sqrt(lam) * np.diff(H, n=2)  # second derivative
     
     return r
     
@@ -276,21 +312,21 @@ def jacobianLM(H, lam, Gexp, wexp, kernMat):
         G0     = H[-1]
         H      = H[:-1]
 
-        Jr  = np.zeros((2*n + nl,ns+1))	                            #check diff time-master  Jr  = np.zeros((n + nl, ns+1))
+        Jr  = np.zeros((2*n + nl,ns+1))	
         
-        Jr[0:2*n, 0:ns]   = -kernelD(H, kernMat) * Kmatrix          # Jr[0:n, 0:ns]   = -kernelD(H, kernMat) * Kmatrix;
-        Jr[0:n, ns]       = -wexp[:n]/Gexp[:n]						# nonzero dr_i/dG0 only for G' 
+        Jr[0:2*n, 0:ns]   = -kernelD(H, kernMat) * Kmatrix
+        Jr[0:n, ns]       = -wexp[:n]/Gexp[:n]						# nonzero dr_i/dG0 only for G'
 
 
-        Jr[2*n:2*n+nl,0:ns] = np.sqrt(lam) * L                  #Jr[n:n+nl,0:ns] = np.sqrt(lam) * L;
-        Jr[2*n:2*n+nl, ns]  = np.zeros(nl)						# Jr[n:n+nl, ns]  = np.zeros(nl)	  column for dr_i/dG0 = 0
+        Jr[2*n:2*n+nl,0:ns] = np.sqrt(lam) * L
+        Jr[2*n:2*n+nl, ns]  = np.zeros(nl)						# column for dr_i/dG0 = 0
         
     else:
 
         Jr  = np.zeros((2*n + nl,ns))	
 
-        Jr[0:2*n, 0:ns]     = -kernelD(H, kernMat) * Kmatrix  #Jr[0:n, 0:ns]   = -kernelD(H, kernMat) * Kmatrix;
-        Jr[2*n:2*n+nl,0:ns] = np.sqrt(lam) * L                 #np.sqrt(lam) * L;   
+        Jr[0:2*n, 0:ns]     = -kernelD(H, kernMat) * Kmatrix
+        Jr[2*n:2*n+nl,0:ns] = np.sqrt(lam) * L
     
     return	Jr
 
@@ -307,7 +343,7 @@ def kernelD(H, kernMat):
         
     """
 
-    n   = int(kernMat.shape[0]/2);  # n   = kernMat.shape[0]; different
+    n   = int(kernMat.shape[0]/2);
     ns  = kernMat.shape[1];
         
     Hsuper  = np.dot(np.ones((2*n,1)), np.exp(H).reshape(1, ns))       

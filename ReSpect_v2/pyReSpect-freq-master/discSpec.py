@@ -134,7 +134,7 @@ def nnLLS(w, tau, Gexp, wexp, isPlateau):
     #
     Kp      = np.dot(np.diag((wexp/Gexp)), K)
     condKp  = np.linalg.cond(Kp)
-    g       = nnls(Kp, wexp, maxiter=10*Kp.shape[1])[0] #time-master nnls(Kp, wexp)[0]	
+    g       = nnls(Kp, wexp, maxiter=10*Kp.shape[1])[0]
         
     GstM   	= np.dot(K, g)
     error 	= np.sum((wexp*(GstM/Gexp - 1.))**2)
@@ -173,7 +173,7 @@ def GetWeights(H, w, s, wb):
     ws         = S*W
     ws2        = ws**2
 
-    kern       = np.vstack((ws2/(1+ws2), ws/(1+ws2))) # time-master kern = np.exp(-T/S)		
+    kern       = np.vstack((ws2/(1+ws2), ws/(1+ws2)))
     wij        = np.dot(kern, np.diag(hs * np.exp(H)))  # 2n * ns
     K          = np.dot(kern, hs * np.exp(H)) # 2n * 1, comparable with Gexp
 
@@ -215,7 +215,7 @@ def GridDensity(x, px, N):
     xi   = np.linspace(min(x),max(x),npts)   # reinterpolate on equi-spaced axis
     fint = interp1d(x,px,'cubic')	         # smoothen using cubic splines
     pint = fint(xi)        					 # interpolation
-    ci   = cumulative_trapezoid(pint, xi, initial=0)                
+    ci   = cumtrapz(pint, xi, initial=0)                
     pint = pint/ci[npts-1]
     ci   = ci/ci[npts-1]                     # normalize ci
 
@@ -268,7 +268,7 @@ def mergeModes_magic(g, tau, imode):
         wmax = max(1./tau1, 1./tau2)*10.
 
         # begin encapsulation
-        def normKern_magic(w, gn, taun, g1, tau1, g2, tau2):    ######## time master different 
+        def normKern_magic(w, gn, taun, g1, tau1, g2, tau2):
             """helper function: for costFcn and mergeModes
             used only when magic = True"""
             wt   = w*taun
@@ -287,7 +287,7 @@ def mergeModes_magic(g, tau, imode):
         # end encapsulation
 
         return quad(normKern_magic, wmin, wmax, args=(gn, taun, g1, tau1, g2, tau2))[0]
-    ### end encapsulation    ### time master end of difference
+    ### end encapsulation    
 
     iniGuess = [g[imode] + g[imode+1], 0.5*(tau[imode] + tau[imode+1])]
     res = minimize(costFcn_magic, iniGuess, args=(g, tau, imode))
@@ -315,7 +315,7 @@ def FineTuneSolution(tau, w, Gexp, wexp, isPlateau):
         g, _, _ = nnLLS(wexp, tau, Gexp, wt_exp, isPlateau)
         Gmodel  = np.zeros(len(Gexp))
 
-            #### time master different
+            
         S, W    = np.meshgrid(tau, wexp)
         ws      = S*W
         ws2     = ws**2
