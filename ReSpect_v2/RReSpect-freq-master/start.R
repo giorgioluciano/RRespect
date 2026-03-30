@@ -1,6 +1,0 @@
-rm(list=ls())
-source("I:/giorgioluciano.github.io/RRespect/ReSpect_v2/RReSpect-freq-master/Rcommon.r")
-source("I:/giorgioluciano.github.io/RRespect/ReSpect_v2/RReSpect-freq-master/RContSpec.r")
-setwd("I:/giorgioluciano.github.io/RRespect/ReSpect_v2/RReSpect-freq-master")
-par = readInput('inp.dat')
-res  = getContSpec(par)
