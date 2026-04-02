@@ -1,0 +1,31 @@
+Package: ReSpectR
+Type: Package
+Title: Relaxation Spectrum Extraction in Time and Frequency Domains
+Version: 0.4.1
+Authors@R:
+        c(
+            person(given = "Giorgio", family = "Luciano", role = c("aut", "cre"), email = "giorgio.luciano@cnr.it"),
+            person(given = "Kristian Hovde", family = "Liland", role = "ctb", email = "kristian.liland@nmbu.no")
+        )
+Description: Tools for continuous and discrete relaxation spectrum extraction in
+    time-domain and frequency-domain workflows, including utilities for explicit
+    output writing and batch progress reporting.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Depends:
+    R (>= 4.1.0)
+Imports:
+    progress,
+    pracma,
+    nnls,
+    minpack.lm
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown,
+    pkgload
+VignetteBuilder: knitr
+Config/testthat/edition: 3

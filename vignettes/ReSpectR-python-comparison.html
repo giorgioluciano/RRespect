@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Comparing ReSpectR Results to Python</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Comparing ReSpectR Results to Python</h1>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>This vignette computes fresh ReSpectR results in-memory (no file
+writes) and compares them against packaged Python reference
+summaries.</p>
+<p>Reference tables are distributed with the package in
+<code>inst/extdata</code>.</p>
+</div>
+<div id="available-comparison-files" class="section level2">
+<h2>Available comparison files</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">list.files</span>(base, <span class="at">pattern =</span> <span class="st">&quot;^comparison_.*</span><span class="sc">\\</span><span class="st">.csv$&quot;</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/Users/kristian/Documents/GitHub/RRespect/inst/extdata/comparison_disc_freq.csv&quot;</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co">#&gt; [2] &quot;/Users/kristian/Documents/GitHub/RRespect/inst/extdata/comparison_disc_time.csv&quot;</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#&gt; [3] &quot;/Users/kristian/Documents/GitHub/RRespect/inst/extdata/comparison_H_freq.csv&quot;   </span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&gt; [4] &quot;/Users/kristian/Documents/GitHub/RRespect/inst/extdata/comparison_H_time.csv&quot;</span></span></code></pre></div>
+<p>Expected files:</p>
+<ul>
+<li><code>comparison_H_time.csv</code></li>
+<li><code>comparison_H_freq.csv</code></li>
+<li><code>comparison_disc_time.csv</code></li>
+<li><code>comparison_disc_freq.csv</code></li>
+</ul>
+<p>Expected bundled test-data directories:</p>
+<ul>
+<li><code>time_tests/</code></li>
+<li><code>freq_tests/</code></li>
+</ul>
+</div>
+<div id="fresh-time-domain-comparison" class="section level2">
+<h2>Fresh Time-Domain Comparison</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>ref_H_time <span class="ot">&lt;-</span> utils<span class="sc">::</span><span class="fu">read.csv</span>(<span class="fu">file.path</span>(base, <span class="st">&quot;comparison_H_time.csv&quot;</span>))</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>ref_D_time <span class="ot">&lt;-</span> utils<span class="sc">::</span><span class="fu">read.csv</span>(<span class="fu">file.path</span>(base, <span class="st">&quot;comparison_disc_time.csv&quot;</span>))</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>time_tests <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(ref_H_time<span class="sc">$</span>test))</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>time_dir <span class="ot">&lt;-</span> <span class="fu">file.path</span>(base, <span class="st">&quot;time_tests&quot;</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>time_current <span class="ot">&lt;-</span> <span class="fu">lapply</span>(time_tests, <span class="cf">function</span>(tt) {</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  dat_file <span class="ot">&lt;-</span> <span class="fu">file.path</span>(time_dir, <span class="fu">paste0</span>(tt, <span class="st">&quot;.dat&quot;</span>))</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">file.exists</span>(dat_file))</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>  cur <span class="ot">&lt;-</span> <span class="fu">run_single_test</span>(<span class="st">&quot;time&quot;</span>, dat_file)</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">test =</span> tt, <span class="at">lamC_current =</span> cur<span class="sc">$</span>lamC, <span class="at">Nopt_current =</span> cur<span class="sc">$</span>Nopt)</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>})</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>time_current <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, time_current)</span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>time_compare <span class="ot">&lt;-</span> <span class="fu">merge</span>(time_current, ref_H_time[, <span class="fu">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;lamC_R&quot;</span>, <span class="st">&quot;lamC_PY&quot;</span>)], <span class="at">by =</span> <span class="st">&quot;test&quot;</span>)</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>time_compare <span class="ot">&lt;-</span> <span class="fu">merge</span>(time_compare, ref_D_time[, <span class="fu">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;Nopt_R&quot;</span>, <span class="st">&quot;Nopt_PY&quot;</span>)], <span class="at">by =</span> <span class="st">&quot;test&quot;</span>)</span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>time_compare<span class="sc">$</span>lamC_rel_diff_vs_PY <span class="ot">&lt;-</span> <span class="fu">abs</span>(time_compare<span class="sc">$</span>lamC_current <span class="sc">-</span> time_compare<span class="sc">$</span>lamC_PY) <span class="sc">/</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>  <span class="fu">pmax</span>(<span class="fu">abs</span>(time_compare<span class="sc">$</span>lamC_PY), .Machine<span class="sc">$</span>double.eps)</span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>time_compare<span class="sc">$</span>lamC_rel_diff_vs_archived_R <span class="ot">&lt;-</span> <span class="fu">abs</span>(time_compare<span class="sc">$</span>lamC_current <span class="sc">-</span> time_compare<span class="sc">$</span>lamC_R) <span class="sc">/</span></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>  <span class="fu">pmax</span>(<span class="fu">abs</span>(time_compare<span class="sc">$</span>lamC_R), .Machine<span class="sc">$</span>double.eps)</span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a>time_compare<span class="sc">$</span>Nopt_delta_vs_PY <span class="ot">&lt;-</span> time_compare<span class="sc">$</span>Nopt_current <span class="sc">-</span> time_compare<span class="sc">$</span>Nopt_PY</span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a>time_compare<span class="sc">$</span>Nopt_delta_vs_archived_R <span class="ot">&lt;-</span> time_compare<span class="sc">$</span>Nopt_current <span class="sc">-</span> time_compare<span class="sc">$</span>Nopt_R</span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a>time_compare[<span class="fu">order</span>(time_compare<span class="sc">$</span>test), ]</span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="co">#&gt;    test lamC_current Nopt_current lamC_R   lamC_PY Nopt_R Nopt_PY</span></span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a><span class="co">#&gt; 1 test1    0.4989116            5     NA 0.8337822      2       2</span></span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a><span class="co">#&gt; 2 test2    2.1884396            7     NA 1.8329807      4       5</span></span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a><span class="co">#&gt; 3 test3    3.1572426           11     NA 4.0296113     10      10</span></span>
+<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a><span class="co">#&gt; 4 test4    2.6659794            8     NA 4.0296113      8       8</span></span>
+<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a><span class="co">#&gt; 5 test5    1.4240289            5     NA 1.8329807      5       5</span></span>
+<span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a><span class="co">#&gt; 6 test6    3.3812645            8     NA 4.0296113      8       8</span></span>
+<span id="cb2-33"><a href="#cb2-33" tabindex="-1"></a><span class="co">#&gt; 7 test7    2.9745809            9     NA 4.0296113      8       8</span></span>
+<span id="cb2-34"><a href="#cb2-34" tabindex="-1"></a><span class="co">#&gt;   lamC_rel_diff_vs_PY lamC_rel_diff_vs_archived_R Nopt_delta_vs_PY</span></span>
+<span id="cb2-35"><a href="#cb2-35" tabindex="-1"></a><span class="co">#&gt; 1           0.4016284                          NA                3</span></span>
+<span id="cb2-36"><a href="#cb2-36" tabindex="-1"></a><span class="co">#&gt; 2           0.1939240                          NA                2</span></span>
+<span id="cb2-37"><a href="#cb2-37" tabindex="-1"></a><span class="co">#&gt; 3           0.2164895                          NA                1</span></span>
+<span id="cb2-38"><a href="#cb2-38" tabindex="-1"></a><span class="co">#&gt; 4           0.3384028                          NA                0</span></span>
+<span id="cb2-39"><a href="#cb2-39" tabindex="-1"></a><span class="co">#&gt; 5           0.2231075                          NA                0</span></span>
+<span id="cb2-40"><a href="#cb2-40" tabindex="-1"></a><span class="co">#&gt; 6           0.1608956                          NA                0</span></span>
+<span id="cb2-41"><a href="#cb2-41" tabindex="-1"></a><span class="co">#&gt; 7           0.2618194                          NA                1</span></span>
+<span id="cb2-42"><a href="#cb2-42" tabindex="-1"></a><span class="co">#&gt;   Nopt_delta_vs_archived_R</span></span>
+<span id="cb2-43"><a href="#cb2-43" tabindex="-1"></a><span class="co">#&gt; 1                        3</span></span>
+<span id="cb2-44"><a href="#cb2-44" tabindex="-1"></a><span class="co">#&gt; 2                        3</span></span>
+<span id="cb2-45"><a href="#cb2-45" tabindex="-1"></a><span class="co">#&gt; 3                        1</span></span>
+<span id="cb2-46"><a href="#cb2-46" tabindex="-1"></a><span class="co">#&gt; 4                        0</span></span>
+<span id="cb2-47"><a href="#cb2-47" tabindex="-1"></a><span class="co">#&gt; 5                        0</span></span>
+<span id="cb2-48"><a href="#cb2-48" tabindex="-1"></a><span class="co">#&gt; 6                        0</span></span>
+<span id="cb2-49"><a href="#cb2-49" tabindex="-1"></a><span class="co">#&gt; 7                        1</span></span></code></pre></div>
+</div>
+<div id="fresh-frequency-domain-comparison" class="section level2">
+<h2>Fresh Frequency-Domain Comparison</h2>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>ref_H_freq <span class="ot">&lt;-</span> utils<span class="sc">::</span><span class="fu">read.csv</span>(<span class="fu">file.path</span>(base, <span class="st">&quot;comparison_H_freq.csv&quot;</span>))</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>ref_D_freq <span class="ot">&lt;-</span> utils<span class="sc">::</span><span class="fu">read.csv</span>(<span class="fu">file.path</span>(base, <span class="st">&quot;comparison_disc_freq.csv&quot;</span>))</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>freq_tests <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(ref_H_freq<span class="sc">$</span>test))</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>freq_dir <span class="ot">&lt;-</span> <span class="fu">file.path</span>(base, <span class="st">&quot;freq_tests&quot;</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>plateau_tests <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;test1u&quot;</span>, <span class="st">&quot;test7&quot;</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>freq_current <span class="ot">&lt;-</span> <span class="fu">lapply</span>(freq_tests, <span class="cf">function</span>(tt) {</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>  dat_file <span class="ot">&lt;-</span> <span class="fu">file.path</span>(freq_dir, <span class="fu">paste0</span>(tt, <span class="st">&quot;.dat&quot;</span>))</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">file.exists</span>(dat_file))</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>  cur <span class="ot">&lt;-</span> <span class="fu">run_single_test</span>(<span class="st">&quot;frequency&quot;</span>, dat_file, <span class="at">plateau =</span> tt <span class="sc">%in%</span> plateau_tests)</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">test =</span> tt, <span class="at">lamC_current =</span> cur<span class="sc">$</span>lamC, <span class="at">Nopt_current =</span> cur<span class="sc">$</span>Nopt)</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>})</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt; G0 = -2.382e-03</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt; G0 = 7.429e+02</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>freq_current <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, freq_current)</span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a>freq_compare <span class="ot">&lt;-</span> <span class="fu">merge</span>(freq_current, ref_H_freq[, <span class="fu">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;lamC_R&quot;</span>, <span class="st">&quot;lamC_PY&quot;</span>)], <span class="at">by =</span> <span class="st">&quot;test&quot;</span>)</span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a>freq_compare <span class="ot">&lt;-</span> <span class="fu">merge</span>(freq_compare, ref_D_freq[, <span class="fu">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;Nopt_R&quot;</span>, <span class="st">&quot;Nopt_PY&quot;</span>)], <span class="at">by =</span> <span class="st">&quot;test&quot;</span>)</span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>freq_compare<span class="sc">$</span>lamC_rel_diff_vs_PY <span class="ot">&lt;-</span> <span class="fu">abs</span>(freq_compare<span class="sc">$</span>lamC_current <span class="sc">-</span> freq_compare<span class="sc">$</span>lamC_PY) <span class="sc">/</span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>  <span class="fu">pmax</span>(<span class="fu">abs</span>(freq_compare<span class="sc">$</span>lamC_PY), .Machine<span class="sc">$</span>double.eps)</span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a>freq_compare<span class="sc">$</span>lamC_rel_diff_vs_archived_R <span class="ot">&lt;-</span> <span class="fu">abs</span>(freq_compare<span class="sc">$</span>lamC_current <span class="sc">-</span> freq_compare<span class="sc">$</span>lamC_R) <span class="sc">/</span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>  <span class="fu">pmax</span>(<span class="fu">abs</span>(freq_compare<span class="sc">$</span>lamC_R), .Machine<span class="sc">$</span>double.eps)</span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a>freq_compare<span class="sc">$</span>Nopt_delta_vs_PY <span class="ot">&lt;-</span> freq_compare<span class="sc">$</span>Nopt_current <span class="sc">-</span> freq_compare<span class="sc">$</span>Nopt_PY</span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a>freq_compare<span class="sc">$</span>Nopt_delta_vs_archived_R <span class="ot">&lt;-</span> freq_compare<span class="sc">$</span>Nopt_current <span class="sc">-</span> freq_compare<span class="sc">$</span>Nopt_R</span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a></span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a>freq_compare[<span class="fu">order</span>(freq_compare<span class="sc">$</span>test), ]</span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="co">#&gt;     test lamC_current Nopt_current   lamC_R  lamC_PY Nopt_R Nopt_PY</span></span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt; 1  test1     4.283763           15 4.029611 4.029611     14      14</span></span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt; 2 test1n     4.317709           13 4.029611 4.029611     13      13</span></span>
+<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="co">#&gt; 3 test1u     4.165172           16 4.029611 4.029611     15      16</span></span>
+<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a><span class="co">#&gt; 4  test2     3.178768           10 4.029611 4.029611      8       8</span></span>
+<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a><span class="co">#&gt; 5  test3     3.672373           10 4.029611 4.029611     14      13</span></span>
+<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a><span class="co">#&gt; 6  test4     4.648981           13 4.029611 4.029611     12      12</span></span>
+<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a><span class="co">#&gt; 7  test5     6.674427           18 8.858668 8.858668     16      17</span></span>
+<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a><span class="co">#&gt; 8  test6     3.087096            7 4.029611 4.029611      6       6</span></span>
+<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a><span class="co">#&gt; 9  test7     3.343678            7 4.029611 4.029611      7       7</span></span>
+<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a><span class="co">#&gt;   lamC_rel_diff_vs_PY lamC_rel_diff_vs_archived_R Nopt_delta_vs_PY</span></span>
+<span id="cb3-41"><a href="#cb3-41" tabindex="-1"></a><span class="co">#&gt; 1          0.06307108                  0.06307108                1</span></span>
+<span id="cb3-42"><a href="#cb3-42" tabindex="-1"></a><span class="co">#&gt; 2          0.07149512                  0.07149512                0</span></span>
+<span id="cb3-43"><a href="#cb3-43" tabindex="-1"></a><span class="co">#&gt; 3          0.03364104                  0.03364104                0</span></span>
+<span id="cb3-44"><a href="#cb3-44" tabindex="-1"></a><span class="co">#&gt; 4          0.21114778                  0.21114778                2</span></span>
+<span id="cb3-45"><a href="#cb3-45" tabindex="-1"></a><span class="co">#&gt; 5          0.08865341                  0.08865341               -3</span></span>
+<span id="cb3-46"><a href="#cb3-46" tabindex="-1"></a><span class="co">#&gt; 6          0.15370461                  0.15370461                1</span></span>
+<span id="cb3-47"><a href="#cb3-47" tabindex="-1"></a><span class="co">#&gt; 7          0.24656535                  0.24656535                1</span></span>
+<span id="cb3-48"><a href="#cb3-48" tabindex="-1"></a><span class="co">#&gt; 8          0.23389739                  0.23389739                1</span></span>
+<span id="cb3-49"><a href="#cb3-49" tabindex="-1"></a><span class="co">#&gt; 9          0.17022310                  0.17022310                0</span></span>
+<span id="cb3-50"><a href="#cb3-50" tabindex="-1"></a><span class="co">#&gt;   Nopt_delta_vs_archived_R</span></span>
+<span id="cb3-51"><a href="#cb3-51" tabindex="-1"></a><span class="co">#&gt; 1                        1</span></span>
+<span id="cb3-52"><a href="#cb3-52" tabindex="-1"></a><span class="co">#&gt; 2                        0</span></span>
+<span id="cb3-53"><a href="#cb3-53" tabindex="-1"></a><span class="co">#&gt; 3                        1</span></span>
+<span id="cb3-54"><a href="#cb3-54" tabindex="-1"></a><span class="co">#&gt; 4                        2</span></span>
+<span id="cb3-55"><a href="#cb3-55" tabindex="-1"></a><span class="co">#&gt; 5                       -4</span></span>
+<span id="cb3-56"><a href="#cb3-56" tabindex="-1"></a><span class="co">#&gt; 6                        1</span></span>
+<span id="cb3-57"><a href="#cb3-57" tabindex="-1"></a><span class="co">#&gt; 7                        2</span></span>
+<span id="cb3-58"><a href="#cb3-58" tabindex="-1"></a><span class="co">#&gt; 8                        1</span></span>
+<span id="cb3-59"><a href="#cb3-59" tabindex="-1"></a><span class="co">#&gt; 9                        0</span></span></code></pre></div>
+</div>
+<div id="aggregate-similarity-summary" class="section level2">
+<h2>Aggregate Similarity Summary</h2>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>summary_stats <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  <span class="at">domain =</span> <span class="fu">c</span>(<span class="st">&quot;time&quot;</span>, <span class="st">&quot;frequency&quot;</span>),</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="at">mean_lamC_rel_diff_vs_PY =</span> <span class="fu">c</span>(</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>    <span class="fu">mean</span>(time_compare<span class="sc">$</span>lamC_rel_diff_vs_PY, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>    <span class="fu">mean</span>(freq_compare<span class="sc">$</span>lamC_rel_diff_vs_PY, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  ),</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  <span class="at">max_lamC_rel_diff_vs_PY =</span> <span class="fu">c</span>(</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>    <span class="fu">max</span>(time_compare<span class="sc">$</span>lamC_rel_diff_vs_PY, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>    <span class="fu">max</span>(freq_compare<span class="sc">$</span>lamC_rel_diff_vs_PY, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>  ),</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  <span class="at">mean_abs_Nopt_delta_vs_PY =</span> <span class="fu">c</span>(</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>    <span class="fu">mean</span>(<span class="fu">abs</span>(time_compare<span class="sc">$</span>Nopt_delta_vs_PY), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>    <span class="fu">mean</span>(<span class="fu">abs</span>(freq_compare<span class="sc">$</span>Nopt_delta_vs_PY), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>  )</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>)</span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a>summary_stats</span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt;      domain mean_lamC_rel_diff_vs_PY max_lamC_rel_diff_vs_PY</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; 1      time                0.2566096               0.4016284</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt; 2 frequency                0.1413777               0.2465653</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt;   mean_abs_Nopt_delta_vs_PY</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt; 1                         1</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt; 2                         1</span></span></code></pre></div>
+</div>
+<div id="notes" class="section level2">
+<h2>Notes</h2>
+<ul>
+<li>This vignette does not write output files; all current ReSpectR
+results are computed in-memory via
+<code>writeOutput = FALSE</code>.</li>
+<li>Python raw output vectors are not distributed in the package, so
+fresh similarity is assessed against packaged Python reference summary
+metrics (<code>lamC_PY</code>, <code>Nopt_PY</code>) and drift versus
+archived R reference columns.</li>
+</ul>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,214 @@
+---
+title: "Comparing ReSpectR Results to Python"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Comparing ReSpectR Results to Python}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  eval     = TRUE
+)
+
+find_pkg_root <- function() {
+  candidates <- c(".", "..")
+  for (p in candidates) {
+    abs_p <- normalizePath(p, mustWork = FALSE)
+    if (file.exists(file.path(abs_p, "DESCRIPTION")) && dir.exists(file.path(abs_p, "R"))) {
+      return(abs_p)
+    }
+  }
+  NULL
+}
+
+pkg_root <- find_pkg_root()
+if (!is.null(pkg_root) && requireNamespace("pkgload", quietly = TRUE)) {
+  pkgload::load_all(pkg_root, export_all = FALSE, helpers = FALSE, quiet = TRUE)
+} else {
+  library(ReSpectR)
+}
+
+# Resolve extdata both for installed package runs and local dev runs (RStudio).
+find_extdata_path <- function() {
+  has_required_assets <- function(p) {
+    if (!nzchar(p) || !dir.exists(p)) {
+      return(FALSE)
+    }
+
+    required_files <- c(
+      "comparison_H_time.csv",
+      "comparison_H_freq.csv",
+      "comparison_disc_time.csv",
+      "comparison_disc_freq.csv"
+    )
+
+    all(file.exists(file.path(p, required_files))) &&
+      dir.exists(file.path(p, "time_tests")) &&
+      dir.exists(file.path(p, "freq_tests"))
+  }
+
+  pkg_path <- system.file("extdata", package = "ReSpectR")
+  if (has_required_assets(pkg_path)) {
+    return(pkg_path)
+  }
+
+  candidates <- c(
+    file.path("inst", "extdata"),
+    file.path("..", "inst", "extdata"),
+    file.path("..", "..", "inst", "extdata")
+  )
+
+  for (p in candidates) {
+    abs_p <- normalizePath(p, mustWork = FALSE)
+    if (has_required_assets(abs_p)) {
+      return(abs_p)
+    }
+  }
+
+  stop(
+    paste(
+      "Could not locate required comparison assets.",
+      "Expected comparison_*.csv plus time_tests/ and freq_tests/ under installed package extdata or local inst/extdata."
+    ),
+    call. = FALSE
+  )
+}
+
+base <- find_extdata_path()
+
+run_single_test <- function(domain, file_path, plateau = FALSE) {
+  par <- setParams(
+    domain = domain,
+    dataFile = file_path,
+    verbose = FALSE,
+    plotting = FALSE,
+    plateau = plateau
+  )
+
+  crs <- getContinuousSpectrum(par, writeOutput = FALSE)
+  drs <- getDiscreteSpectrum(par, crs = crs, writeOutput = FALSE)
+
+  list(lamC = crs$lamC, Nopt = drs$Nopt)
+}
+```
+
+## Overview
+
+This vignette computes fresh ReSpectR results in-memory (no file writes) and
+compares them against packaged Python reference summaries.
+
+Reference tables are distributed with the package in `inst/extdata`.
+
+## Available comparison files
+
+```{r files}
+list.files(base, pattern = "^comparison_.*\\.csv$", full.names = TRUE)
+```
+
+Expected files:
+
+- `comparison_H_time.csv`
+- `comparison_H_freq.csv`
+- `comparison_disc_time.csv`
+- `comparison_disc_freq.csv`
+
+Expected bundled test-data directories:
+
+- `time_tests/`
+- `freq_tests/`
+
+## Fresh Time-Domain Comparison
+
+```{r time-fresh}
+ref_H_time <- utils::read.csv(file.path(base, "comparison_H_time.csv"))
+ref_D_time <- utils::read.csv(file.path(base, "comparison_disc_time.csv"))
+
+time_tests <- sort(unique(ref_H_time$test))
+time_dir <- file.path(base, "time_tests")
+
+time_current <- lapply(time_tests, function(tt) {
+  dat_file <- file.path(time_dir, paste0(tt, ".dat"))
+  stopifnot(file.exists(dat_file))
+  cur <- run_single_test("time", dat_file)
+  data.frame(test = tt, lamC_current = cur$lamC, Nopt_current = cur$Nopt)
+})
+time_current <- do.call(rbind, time_current)
+
+time_compare <- merge(time_current, ref_H_time[, c("test", "lamC_R", "lamC_PY")], by = "test")
+time_compare <- merge(time_compare, ref_D_time[, c("test", "Nopt_R", "Nopt_PY")], by = "test")
+
+time_compare$lamC_rel_diff_vs_PY <- abs(time_compare$lamC_current - time_compare$lamC_PY) /
+  pmax(abs(time_compare$lamC_PY), .Machine$double.eps)
+time_compare$lamC_rel_diff_vs_archived_R <- abs(time_compare$lamC_current - time_compare$lamC_R) /
+  pmax(abs(time_compare$lamC_R), .Machine$double.eps)
+time_compare$Nopt_delta_vs_PY <- time_compare$Nopt_current - time_compare$Nopt_PY
+time_compare$Nopt_delta_vs_archived_R <- time_compare$Nopt_current - time_compare$Nopt_R
+
+time_compare[order(time_compare$test), ]
+```
+
+## Fresh Frequency-Domain Comparison
+
+```{r freq-fresh}
+ref_H_freq <- utils::read.csv(file.path(base, "comparison_H_freq.csv"))
+ref_D_freq <- utils::read.csv(file.path(base, "comparison_disc_freq.csv"))
+
+freq_tests <- sort(unique(ref_H_freq$test))
+freq_dir <- file.path(base, "freq_tests")
+
+plateau_tests <- c("test1u", "test7")
+
+freq_current <- lapply(freq_tests, function(tt) {
+  dat_file <- file.path(freq_dir, paste0(tt, ".dat"))
+  stopifnot(file.exists(dat_file))
+  cur <- run_single_test("frequency", dat_file, plateau = tt %in% plateau_tests)
+  data.frame(test = tt, lamC_current = cur$lamC, Nopt_current = cur$Nopt)
+})
+freq_current <- do.call(rbind, freq_current)
+
+freq_compare <- merge(freq_current, ref_H_freq[, c("test", "lamC_R", "lamC_PY")], by = "test")
+freq_compare <- merge(freq_compare, ref_D_freq[, c("test", "Nopt_R", "Nopt_PY")], by = "test")
+
+freq_compare$lamC_rel_diff_vs_PY <- abs(freq_compare$lamC_current - freq_compare$lamC_PY) /
+  pmax(abs(freq_compare$lamC_PY), .Machine$double.eps)
+freq_compare$lamC_rel_diff_vs_archived_R <- abs(freq_compare$lamC_current - freq_compare$lamC_R) /
+  pmax(abs(freq_compare$lamC_R), .Machine$double.eps)
+freq_compare$Nopt_delta_vs_PY <- freq_compare$Nopt_current - freq_compare$Nopt_PY
+freq_compare$Nopt_delta_vs_archived_R <- freq_compare$Nopt_current - freq_compare$Nopt_R
+
+freq_compare[order(freq_compare$test), ]
+```
+
+## Aggregate Similarity Summary
+
+```{r summary}
+summary_stats <- data.frame(
+  domain = c("time", "frequency"),
+  mean_lamC_rel_diff_vs_PY = c(
+    mean(time_compare$lamC_rel_diff_vs_PY, na.rm = TRUE),
+    mean(freq_compare$lamC_rel_diff_vs_PY, na.rm = TRUE)
+  ),
+  max_lamC_rel_diff_vs_PY = c(
+    max(time_compare$lamC_rel_diff_vs_PY, na.rm = TRUE),
+    max(freq_compare$lamC_rel_diff_vs_PY, na.rm = TRUE)
+  ),
+  mean_abs_Nopt_delta_vs_PY = c(
+    mean(abs(time_compare$Nopt_delta_vs_PY), na.rm = TRUE),
+    mean(abs(freq_compare$Nopt_delta_vs_PY), na.rm = TRUE)
+  )
+)
+
+summary_stats
+```
+
+## Notes
+
+- This vignette does not write output files; all current ReSpectR results are
+  computed in-memory via `writeOutput = FALSE`.
+- Python raw output vectors are not distributed in the package, so fresh
+  similarity is assessed against packaged Python reference summary metrics
+  (`lamC_PY`, `Nopt_PY`) and drift versus archived R reference columns.

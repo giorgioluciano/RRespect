@@ -1,0 +1,4 @@
+^TODO.txt$
+^legacy$
+^.*\.Rproj$
+^\.Rproj\.user$
