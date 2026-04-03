@@ -1,7 +1,7 @@
 Package: ReSpectR
 Type: Package
 Title: Relaxation Spectrum Extraction in Time and Frequency Domains
-Version: 0.4.1
+Version: 0.5.0
 Authors@R:
         c(
             person(given = "Giorgio", family = "Luciano", role = c("aut", "cre"), email = "giorgio.luciano@cnr.it"),
@@ -10,7 +10,7 @@ Authors@R:
 Description: Tools for continuous and discrete relaxation spectrum extraction in
     time-domain and frequency-domain workflows, including utilities for explicit
     output writing and batch progress reporting.
-License: What license is it under?
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)

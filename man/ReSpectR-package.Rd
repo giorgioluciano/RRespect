@@ -41,6 +41,21 @@ Returned objects carry stable classes
 \code{"respect_continuous_spectrum"} and \code{"respect_discrete_spectrum"}, so they
 can be passed directly to \code{plot()} for built-in visualisation.
 }
+
+\subsection{Vignettes}{
+
+The package includes two vignettes:
+\itemize{
+\item \code{ReSpectR-intro}: end-to-end usage for time- and frequency-domain workflows
+\item \code{ReSpectR-python-comparison}: direct R-vs-Python comparison using bundled
+reference outputs
+}
+
+To open them from an installed package:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{browseVignettes("ReSpectR")
+}\if{html}{\out{</div>}}
+}
 }
 \references{
 Shanbhag, S. (2019). pyReSpect: A computer program to extract discrete and

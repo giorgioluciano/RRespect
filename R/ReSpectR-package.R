@@ -35,6 +35,20 @@
 #' `"respect_continuous_spectrum"` and `"respect_discrete_spectrum"`, so they
 #' can be passed directly to `plot()` for built-in visualisation.
 #'
+#' ## Vignettes
+#'
+#' The package includes two vignettes:
+#'
+#' - `ReSpectR-intro`: end-to-end usage for time- and frequency-domain workflows
+#' - `ReSpectR-python-comparison`: direct R-vs-Python comparison using bundled
+#'   reference outputs
+#'
+#' To open them from an installed package:
+#'
+#' ```
+#' browseVignettes("ReSpectR")
+#' ```
+#'
 #' @seealso
 #' Package repository: \url{https://github.com/}
 #'

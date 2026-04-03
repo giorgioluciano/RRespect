@@ -1,6 +1,4 @@
 ReSpectR conversion TODO
 
-- Decide and confirm package license (currently unknown).
+- Decide and confirm package license (currently GPL-3).
 - After decision, update DESCRIPTION License field and add the proper LICENSE file/text.
-- [DONE] Create vignette that compares solutions with Python.
-- [DONE] Store Python comparison CSV files in inst/extdata.
