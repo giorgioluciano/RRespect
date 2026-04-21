@@ -2,3 +2,5 @@ ReSpectR conversion TODO
 
 - Decide and confirm package license (currently GPL-3).
 - After decision, update DESCRIPTION License field and add the proper LICENSE file/text.
+- Add repository and issue links to DESCRIPTION.
+- Update repository link in ?ReSpectR
