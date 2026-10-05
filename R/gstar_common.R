@@ -3,6 +3,17 @@
 
 # Read G*(w) data: 3-column [w  G'  G''] or 5-column [w  G'  G''  wt1  wt2]
 .gstarGetExpData <- function(fname) {
+  if (!is.character(fname) || length(fname) != 1L ||
+      is.na(fname) || !nzchar(fname)) {
+    stop("Input file path must be one non-empty string.", call. = FALSE)
+  }
+  
+  if (!file.exists(fname)) {
+    stop(
+      sprintf("Input data file does not exist: %s", fname),
+      call. = FALSE
+    )
+  }
   data <- utils::read.table(fname, header = FALSE)
   cols <- ncol(data)
 

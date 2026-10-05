@@ -2,7 +2,8 @@
 
 ## Package quality
 - [ ] Clean installation from source
-- [ ] `devtools::test()` passes
+- [x] `devtools::test()` passes — 40 passed, 0 failed, 0 test warnings on Windows 11 / R 4.6.0 (2026-10-05)
+- [x] Test files run individually with no global-environment pollution
 - [ ] `devtools::check()` passes
 - [ ] `R CMD check --as-cran` passes
 - [ ] Examples run

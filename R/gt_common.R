@@ -22,6 +22,17 @@
 
 # Read G(t) data: 2-column [t  Gt]  or 3-column [t  Gt  wt]
 .gtGetExpData <- function(fname) {
+  if (!is.character(fname) || length(fname) != 1L ||
+      is.na(fname) || !nzchar(fname)) {
+    stop("Input file path must be one non-empty string.", call. = FALSE)
+  }
+  
+  if (!file.exists(fname)) {
+    stop(
+      sprintf("Input data file does not exist: %s", fname),
+      call. = FALSE
+    )
+  }
   data <- utils::read.table(fname, header = FALSE)
   cols <- ncol(data)
   to   <- data[, 1];  Gto <- data[, 2]
