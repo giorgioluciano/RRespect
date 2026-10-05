@@ -13,6 +13,7 @@
 
 ## Numerical validation
 - [ ] Synthetic one-mode Maxwell case
+- [x] Synthetic three-mode Maxwell case — discrete frequency-domain recovery: 16 assertions passed; full suite: 56 passed (2026-10-05)
 - [ ] Synthetic multi-mode Maxwell case
 - [ ] Noisy synthetic case
 - [ ] Boundary and invalid-input cases
