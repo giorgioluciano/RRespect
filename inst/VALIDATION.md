@@ -5,7 +5,9 @@
 - [x] `devtools::test()` passes — 40 passed, 0 failed, 0 test warnings on Windows 11 / R 4.6.0 (2026-10-05)
 - [x] Test files run individually with no global-environment pollution
 - [ ] `devtools::check()` passes
-- [ ] `R CMD check --as-cran` passes
+- [x] `R CMD check --as-cran` passes — 0 errors, 0 warnings; CRAN incoming notes reviewed on Windows 11 / R 4.6.0 (2026-10-05)
+- [x] PDF and HTML package manuals build successfully
+- [x] Package vignettes build and rebuild successfully
 - [ ] Examples run
 - [ ] Vignettes build
 

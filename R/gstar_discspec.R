@@ -247,7 +247,7 @@
   tauSpacing <- if (length(tau) > 1) tau[-1] / tau[-length(tau)] else Inf
   itry <- 0
   while (length(tauSpacing) > 0 && min(tauSpacing) < par$minTauSpacing && itry < 3) {
-    cat("\tTau Spacing < minTauSpacing\n")
+    
     imode      <- which.min(tauSpacing)
     mg         <- .gstarMergeModes(g, tau, imode)
     g <- mg$g;  tau <- mg$tau
