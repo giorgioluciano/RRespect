@@ -1,1 +1,5 @@
 .Rproj.user
+.positai
+.claude
+.Rhistory
+*.Rcheck/
