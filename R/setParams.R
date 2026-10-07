@@ -13,13 +13,16 @@
 #' @param plotting Logical. Enable plotting.
 #' @param lamMin Numeric. Minimum lambda for scan.
 #' @param lamMax Numeric. Maximum lambda for scan.
-#' @param lamDensity Integer >= 2. Points per decade.
-#' @param plateau Logical. Frequency-domain plateau model flag.
+#' @param lamDensity Integer >= 2. Points per decade. If NULL, uses 3 for legacy and 2 for experimental.
+#' @param plateau Logical. Infer a plateau modulus in either domain.
 #' @param maxNumModes Integer >= 0. Hard cap on mode count.
 #' @param deltaBaseWeightDist Numeric in (0, 1). AIC base-weight spacing.
 #' @param minTauSpacing Numeric > 1. Minimum adjacent tau spacing.
 #' @param condWt Numeric in \[0, 1\]. Condition-number weighting.
 #' @param baseDistWt Numeric in \[0, 1\]. Base-distance weighting.
+#' @param solver Solver selection: "experimental" (updated TRF workflow, default) or "legacy".
+#'   Experimental workflows support continuous and discrete spectra in both
+#'   domains. Their numerical compatibility is tested against Python 2.1.
 #'
 #' @return Named list of validated parameters.
 #' @export
@@ -38,15 +41,22 @@ setParams <- function(
   plotting = FALSE,
   lamMin = 1e-10,
   lamMax = 1e3,
-  lamDensity = 3L,
+  lamDensity = NULL,
   plateau = FALSE,
   maxNumModes = 0L,
   deltaBaseWeightDist = 0.2,
   minTauSpacing = 1.25,
   condWt = 0.5,
-  baseDistWt = 0.5
+  baseDistWt = 0.5,
+  solver = c("experimental", "legacy")
 ) {
   domain <- match.arg(domain)
+  solver <- match.arg(solver)
+
+  if (is.null(lamDensity)) {
+    lamDensity <- if (identical(solver, "experimental")) 2L else 3L
+  }
+
 
   if (is.null(dataFile) || !nzchar(dataFile)) {
     dataFile <- if (domain == "time") "Gt.dat" else "Gst.dat"
@@ -59,8 +69,9 @@ setParams <- function(
 
   out <- list(
     domain = domain,
-    dataFile = dataFile,
-    ns = as.integer(ns),
+    solver = solver,
+	dataFile = dataFile,
+	ns = as.integer(ns),
     lamC = lamC,
     smFacLam = smFacLam,
     freqEnd = as.integer(freqEnd),
@@ -69,14 +80,13 @@ setParams <- function(
     lamMin = lamMin,
     lamMax = lamMax,
     lamDensity = as.integer(lamDensity),
+    plateau = isTRUE(plateau),
     maxNumModes = as.integer(maxNumModes),
     deltaBaseWeightDist = deltaBaseWeightDist,
     minTauSpacing = minTauSpacing
   )
 
-  if (domain == "frequency") {
-    out$plateau <- isTRUE(plateau)
-  } else {
+  if (domain == "time") {
     out$condWt <- condWt
     out$baseDistWt <- baseDistWt
   }

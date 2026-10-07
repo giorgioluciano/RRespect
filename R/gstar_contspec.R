@@ -58,26 +58,104 @@
 
 # ── getH: LM solve for H (±G0 plateau) ───────────────────────────────────────
 .gstarGetH <- function(lam, Gexp, wexp, H, kernMat, G0 = NULL) {
-  ctrl <- minpack.lm::nls.lm.control(maxiter = 500, ftol = 1e-8, ptol = 1e-8)
-  if (!is.null(G0)) {
-    Hplus <- c(H, G0)
-    res   <- minpack.lm::nls.lm(
-      par     = Hplus,
-      fn      = .gstarResidualLM,
-      jac     = .gstarJacobianLM,
-      lam     = lam, Gexp = Gexp, wexp = wexp, kernMat = kernMat,
-      control = ctrl
-    )
-    return(list(H = res$par[seq_len(length(H))],
-                G0 = res$par[length(H) + 1L]))
-  }
-  res <- minpack.lm::nls.lm(
-    par     = H,
-    fn      = .gstarResidualLM,
-    jac     = .gstarJacobianLM,
-    lam     = lam, Gexp = Gexp, wexp = wexp, kernMat = kernMat,
-    control = ctrl
+  ctrl <- minpack.lm::nls.lm.control(
+    maxiter = 500,
+    ftol = 1e-8,
+    ptol = 1e-8
   )
+
+  solve_once <- function(start) {
+    iteration_warnings <- character()
+
+    res <- withCallingHandlers(
+      minpack.lm::nls.lm(
+        par = start,
+        fn = .gstarResidualLM,
+        jac = .gstarJacobianLM,
+        lam = lam,
+        Gexp = Gexp,
+        wexp = wexp,
+        kernMat = kernMat,
+        control = ctrl
+      ),
+      warning = function(w) {
+        msg <- conditionMessage(w)
+
+        if (grepl(
+          "Number of iterations has reached",
+          msg,
+          fixed = TRUE
+        )) {
+          iteration_warnings <<- c(iteration_warnings, msg)
+          invokeRestart("muffleWarning")
+        }
+      }
+    )
+
+    list(
+      result = res,
+      iteration_warnings = iteration_warnings
+    )
+  }
+
+  is_valid <- function(res) {
+    all(is.finite(res$par)) &&
+      all(is.finite(res$fvec)) &&
+      is.finite(sum(res$fvec^2))
+  }
+
+  start <- if (is.null(G0)) H else c(H, G0)
+  first <- solve_once(start)
+  res <- first$result
+  retried <- FALSE
+
+  if (identical(as.integer(res$info), -1L) && is_valid(res)) {
+    retried <- TRUE
+    second <- solve_once(res$par)
+    candidate <- second$result
+
+    if (
+      is_valid(candidate) &&
+      sum(candidate$fvec^2) <= sum(res$fvec^2)
+    ) {
+      res <- candidate
+    }
+  }
+
+  if (!is_valid(res)) {
+    stop(
+      sprintf(
+        "Continuous spectrum LM returned non-finite values at lambda = %.6e.",
+        lam
+      ),
+      call. = FALSE
+    )
+  }
+
+  if (!(res$info %in% 1:3)) {
+    warning(
+      sprintf(
+        paste0(
+          "Continuous spectrum LM did not satisfy the accepted ",
+          "convergence criteria at lambda = %.6e ",
+          "(info = %d, retry = %s): %s"
+        ),
+        lam,
+        res$info,
+        retried,
+        res$message
+      ),
+      call. = FALSE
+    )
+  }
+
+  if (!is.null(G0)) {
+    return(list(
+      H = res$par[seq_len(length(H))],
+      G0 = res$par[length(H) + 1L]
+    ))
+  }
+
   res$par
 }
 

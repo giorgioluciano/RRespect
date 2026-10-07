@@ -29,7 +29,15 @@ NULL
 
 .respectDiscreteFitTime <- function(x) {
   crs <- x$continuous
-  fit <- as.vector(exp(-outer(crs$t, 1 / x$tau)) %*% x$g)
+
+  fit <- as.vector(
+    exp(-outer(crs$t, 1 / x$tau)) %*% x$g
+  )
+
+  if (!is.null(x$G0)) {
+    fit <- fit + x$G0
+  }
+
   cbind(crs$t, fit)
 }
 

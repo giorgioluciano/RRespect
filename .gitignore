@@ -3,3 +3,19 @@
 .claude
 .Rhistory
 *.Rcheck/
+
+# Local numerical-audit artifacts
+/.RData
+/output/
+/R-before-time-plateau-*.zip
+/R-before-time-plateau-*.txt
+/final-refinement-check-*/
+/reference-audit-*/
+/reference_audit.r
+/python2-freq-*/
+/python2-time-*/
+/time-error-check-*/
+/time-modes-*/
+/time-no-plateau-check-*/
+/time-plateau-check-*/
+/R/check_trf_parity.py

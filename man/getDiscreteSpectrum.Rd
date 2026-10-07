@@ -27,8 +27,8 @@ getDiscreteSpectrum(
 A list with discrete-spectrum results.
 }
 \description{
-Runs the legacy discrete-spectrum solver through a package API.
-During migration this function bridges to domain-specific legacy code.
+Runs a discrete-spectrum solver through the package API.
+The experimental option uses the updated Python-style workflow.
 }
 \examples{
 \dontrun{

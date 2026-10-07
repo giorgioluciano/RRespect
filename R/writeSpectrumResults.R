@@ -19,17 +19,44 @@ writeSpectrumResults <- function(results, outputDir = "output", overwrite = TRUE
   dir.create(outputDir, recursive = TRUE, showWarnings = FALSE)
   written <- character(0)
 
-  write_table_if_present <- function(obj, fileName) {
+    write_table_if_present <- function(
+    obj, fileName, plateau_header = FALSE
+  ) {
     fullPath <- file.path(outputDir, fileName)
+
     if (file.exists(fullPath) && !isTRUE(overwrite)) {
       stop("Refusing to overwrite existing file: ", fullPath)
     }
-    utils::write.table(obj, fullPath, row.names = FALSE, col.names = FALSE)
+
+    if (isTRUE(plateau_header) && !is.null(results$G0)) {
+      write(
+        sprintf("# G0 = %.17e", results$G0),
+        fullPath
+      )
+
+      utils::write.table(
+        obj, fullPath,
+        append = TRUE,
+        row.names = FALSE,
+        col.names = FALSE
+      )
+    } else {
+      utils::write.table(
+        obj, fullPath,
+        row.names = FALSE,
+        col.names = FALSE
+      )
+    }
+
     written <<- c(written, fullPath)
   }
 
   if (!is.null(results$H) && !is.null(results$s)) {
-    write_table_if_present(cbind(results$s, results$H), "H.dat")
+    write_table_if_present(
+      cbind(results$s, results$H),
+      "H.dat",
+      plateau_header = identical(results$domain, "time")
+    )
   }
 
   if (!is.null(results$Gfit)) {
@@ -37,11 +64,37 @@ writeSpectrumResults <- function(results, outputDir = "output", overwrite = TRUE
   }
 
   if (!is.null(results$dmodes)) {
-    write_table_if_present(results$dmodes, "dmodes.dat")
+    write_table_if_present(
+      results$dmodes,
+      "dmodes.dat",
+      plateau_header = identical(results$domain, "time")
+    )
   }
 
   if (!is.null(results$aic)) {
     write_table_if_present(results$aic, "aic.dat")
+  }
+
+  if (
+    identical(results$domain, "time") &&
+    !is.null(results$continuous) &&
+    !is.null(results$g) &&
+    !is.null(results$tau)
+  ) {
+    t <- results$continuous$t
+
+    fitted <- as.vector(
+      exp(-outer(t, 1 / results$tau)) %*% results$g
+    )
+
+    if (!is.null(results$G0)) {
+      fitted <- fitted + results$G0
+    }
+
+    write_table_if_present(
+      cbind(t, fitted),
+      "Gfitd.dat"
+    )
   }
 
   invisible(written)

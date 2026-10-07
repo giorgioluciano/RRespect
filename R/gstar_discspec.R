@@ -180,6 +180,112 @@
        Nv = Nv, Gc = Gc, Cerror = Cerror)
 }
 
+.gstarFinalRefinement <- function(
+    g, tau, w, Gexp, wexp, isPlateau,
+    maxPasses = 5L, relativeTolerance = 1e-6
+) {
+  evaluate <- function(g, tau) {
+    n <- length(w)
+    ws <- outer(w, tau)
+    ws2 <- ws^2
+    K <- rbind(ws2 / (1 + ws2), ws / (1 + ws2))
+
+    if (isPlateau) {
+      stopifnot(length(g) == length(tau) + 1L)
+      fitted <- as.vector(K %*% g[-length(g)])
+      fitted[seq_len(n)] <- fitted[seq_len(n)] + g[length(g)]
+    } else {
+      stopifnot(length(g) == length(tau))
+      fitted <- as.vector(K %*% g)
+    }
+
+    value <- sum((wexp * (fitted / Gexp - 1))^2)
+    if (!is.finite(value)) stop("Non-finite final discrete SSE")
+    value
+  }
+
+  bestError <- evaluate(g, tau)
+  history <- data.frame(
+    pass = 0L, SSE = bestError, N = length(tau),
+    improvement = NA_real_, kept = TRUE,
+    message = "", warnings = ""
+  )
+  stopReason <- "max_passes"
+
+  for (k in seq_len(maxPasses)) {
+    if (bestError == 0) {
+      stopReason <- "zero_residual"
+      break
+    }
+
+    warns <- character()
+    attempt <- tryCatch(
+      withCallingHandlers({
+        candidate <- .gstarFineTuneSolution(
+          tau, w, Gexp, wexp, isPlateau
+        )
+
+        if (!length(candidate$tau) ||
+            any(!is.finite(c(candidate$g, candidate$tau))) ||
+            any(candidate$tau <= 0) || any(candidate$g < 0)) {
+          stop("Invalid final refinement candidate")
+        }
+
+        list(
+          candidate = candidate,
+          SSE = evaluate(candidate$g, candidate$tau)
+        )
+      }, warning = function(warning) {
+        warns <<- c(warns, conditionMessage(warning))
+        invokeRestart("muffleWarning")
+      }),
+      error = function(e) e
+    )
+
+    if (inherits(attempt, "error")) {
+      history <- rbind(history, data.frame(
+        pass = k, SSE = NA_real_, N = NA_integer_,
+        improvement = NA_real_, kept = FALSE,
+        message = conditionMessage(attempt),
+        warnings = paste(unique(warns), collapse = " | ")
+      ))
+      stopReason <- "error"
+      break
+    }
+
+    improvement <- (bestError - attempt$SSE) / bestError
+    keep <- attempt$SSE < bestError
+
+    if (keep) {
+      g <- attempt$candidate$g
+      tau <- attempt$candidate$tau
+      bestError <- attempt$SSE
+    }
+
+    history <- rbind(history, data.frame(
+      pass = k,
+      SSE = attempt$SSE,
+      N = length(attempt$candidate$tau),
+      improvement = improvement,
+      kept = keep,
+      message = "",
+      warnings = paste(unique(warns), collapse = " | ")
+    ))
+
+    if (!keep || improvement <= relativeTolerance) {
+      stopReason <- if (keep) "relative_tolerance" else "no_improvement"
+      break
+    }
+  }
+
+  list(
+    g = g, tau = tau, error = bestError,
+    history = history, stopReason = stopReason
+  )
+}
+
+
+
 # ── getDiscSpecMagic (main entry point) ───────────────────────────────────────
 .gstarGetDiscSpecMagic <- function(par, writeOutput = FALSE, outputDir = "output",
                                    contResult = NULL) {
@@ -247,7 +353,7 @@
   tauSpacing <- if (length(tau) > 1) tau[-1] / tau[-length(tau)] else Inf
   itry <- 0
   while (length(tauSpacing) > 0 && min(tauSpacing) < par$minTauSpacing && itry < 3) {
-    
+
     imode      <- which.min(tauSpacing)
     mg         <- .gstarMergeModes(g, tau, imode)
     g <- mg$g;  tau <- mg$tau
@@ -256,6 +362,14 @@
     tauSpacing <- if (length(tau) > 1) tau[-1] / tau[-length(tau)] else Inf
     itry <- itry + 1
   }
+
+  finalRefinement <- .gstarFinalRefinement(
+    g, tau, w, Gexp, wexp, isTRUE(par$plateau)
+  )
+
+  g <- finalRefinement$g
+  tau <- finalRefinement$tau
+  error <- finalRefinement$error
 
   G0 <- 0
   if (isTRUE(par$plateau)) { G0 <- g[length(g)];  g <- g[-length(g)] }
@@ -300,5 +414,15 @@
       cat(sprintf("%3d \t %.5e \t %.5e\n", i, g[i], tau[i]))
   }
 
-  list(Nopt = Nopt, g = g, tau = tau, error = error)
+  list(
+    Nopt = Nopt,
+    g = g,
+    tau = tau,
+    G0 = G0,
+    error = error,
+    refinement = list(
+      history = finalRefinement$history,
+      stopReason = finalRefinement$stopReason
+    )
+  )
 }
