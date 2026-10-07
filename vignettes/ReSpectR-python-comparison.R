@@ -1,0 +1,348 @@
+## ----setup, include = FALSE---------------------------------------------------
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>"
+)
+
+find_pkg_root <- function() {
+  candidates <- c(".", "..")
+  for (p in candidates) {
+    abs_p <- normalizePath(p, mustWork = FALSE)
+    if (file.exists(file.path(abs_p, "DESCRIPTION")) && dir.exists(file.path(abs_p, "R"))) {
+      return(abs_p)
+    }
+  }
+  NULL
+}
+
+pkg_root <- find_pkg_root()
+if (!is.null(pkg_root) && requireNamespace("pkgload", quietly = TRUE)) {
+  pkgload::load_all(pkg_root, export_all = FALSE, helpers = FALSE, quiet = TRUE)
+} else {
+  library(ReSpectR)
+}
+
+find_extdata_path <- function() {
+  has_required_assets <- function(p) {
+    if (!nzchar(p) || !dir.exists(p)) {
+      return(FALSE)
+    }
+
+    dir.exists(file.path(p, "time_tests")) &&
+      dir.exists(file.path(p, "freq_tests")) &&
+      dir.exists(file.path(p, "py_output_time")) &&
+      dir.exists(file.path(p, "py_output_freq"))
+  }
+
+  pkg_path <- system.file("extdata", package = "ReSpectR")
+  if (has_required_assets(pkg_path)) {
+    return(pkg_path)
+  }
+
+  candidates <- c(
+    file.path("inst", "extdata"),
+    file.path("..", "inst", "extdata"),
+    file.path("..", "..", "inst", "extdata")
+  )
+
+  for (p in candidates) {
+    abs_p <- normalizePath(p, mustWork = FALSE)
+    if (has_required_assets(abs_p)) {
+      return(abs_p)
+    }
+  }
+
+  stop(
+    paste(
+      "Could not locate required comparison assets.",
+      "Expected time_tests/, freq_tests/, py_output_time/, and py_output_freq/ under installed package extdata or local inst/extdata."
+    ),
+    call. = FALSE
+  )
+}
+
+base <- find_extdata_path()
+
+# ------------------------------------------------------------------
+# Helpers
+# ------------------------------------------------------------------
+
+# Run ReSpectR for one test, return crs and drs objects.
+run_r_test <- function(domain, file_path, plateau = FALSE) {
+  par <- setParams(
+    domain = domain,
+    dataFile = file_path,
+    verbose = FALSE,
+    plotting = FALSE,
+    plateau = plateau
+  )
+  crs <- getContinuousSpectrum(par, writeOutput = FALSE)
+  drs <- getDiscreteSpectrum(par, crs = crs, writeOutput = FALSE)
+  list(crs = crs, drs = drs)
+}
+
+# Read Python precomputed output for one test.
+# Returns a list with H (data.frame), Gfit (data.frame), dmodes (data.frame).
+read_py_output <- function(domain, test_name, base) {
+  sub <- if (domain == "time") "py_output_time" else "py_output_freq"
+  d   <- file.path(base, sub, test_name)
+  list(
+    H      = utils::read.table(file.path(d, "H.dat"),      comment.char = "#"),
+    Gfit   = utils::read.table(file.path(d, "Gfit.dat"),   comment.char = "#"),
+    dmodes = utils::read.table(file.path(d, "dmodes.dat"), comment.char = "#")
+  )
+}
+
+# Compare H(tau) spectrum: returns per-point abs difference and summary stats.
+# Both Python and R use the same tau grid (identical algorithm, same ns, same data).
+# Time domain H.dat: (tau, H)    — 2 columns.
+# Freq domain H.dat: (tau, H, 0) — 3 columns (3rd always 0 for Im part).
+compare_H <- function(r_s, r_H, py_H) {
+  tau     <- r_s           # tau grid from R (== py_H$V1 by construction)
+  H_R     <- r_H
+  H_PY    <- py_H$V2
+  diff    <- H_R - H_PY
+  list(
+    tau      = tau,
+    H_R      = H_R,
+    H_PY     = H_PY,
+    diff     = diff,
+    rmse     = sqrt(mean(diff^2)),
+    max_diff = max(abs(diff))
+  )
+}
+
+# Compare fitted G curves.
+# Time:  Gfit columns (t, G_fit)           → compare 2nd column.
+# Freq:  Gfit columns (w, G'_fit, G''_fit) → RMSE over both components.
+compare_Gfit <- function(domain, r_Gfit, py_Gfit) {
+  if (domain == "time") {
+    diff <- r_Gfit[, 2] - py_Gfit$V2
+    rmse <- sqrt(mean(diff^2))
+    rel  <- sqrt(mean((diff / py_Gfit$V2)^2))
+  } else {
+    diff_p  <- r_Gfit[, 2] - py_Gfit$V2
+    diff_pp <- r_Gfit[, 3] - py_Gfit$V3
+    rmse    <- sqrt(mean(diff_p^2 + diff_pp^2))
+    denom   <- sqrt(py_Gfit$V2^2 + py_Gfit$V3^2)
+    rel     <- sqrt(mean((diff_p^2 + diff_pp^2) / denom^2))
+  }
+  list(rmse = rmse, rel_rmse = rel)
+}
+
+# Build a side-by-side comparison table of discrete modes.
+# Pads the shorter mode list with NA so R and Python columns stay aligned.
+side_by_side_modes <- function(r_modes, py_modes) {
+  n <- max(nrow(r_modes), nrow(py_modes))
+  pad <- function(x) {
+    if (nrow(x) < n) {
+      x[(nrow(x) + 1):n, ] <- NA
+    }
+    x
+  }
+  r2  <- pad(r_modes)
+  py2 <- pad(py_modes)
+  data.frame(
+    tau_R  = r2$tau,
+    g_R    = r2$g,
+    tau_PY = py2$tau,
+    g_PY   = py2$g
+  )
+}
+
+# Plateau tests (frequency domain only).
+plateau_tests <- c("test1u", "test7")
+
+# Summary CSVs (still used for Python lamC reference scalar).
+ref_H_time <- utils::read.csv(file.path(base, "comparison_H_time.csv"))
+ref_H_freq <- utils::read.csv(file.path(base, "comparison_H_freq.csv"))
+ref_D_time <- utils::read.csv(file.path(base, "comparison_disc_time.csv"))
+ref_D_freq <- utils::read.csv(file.path(base, "comparison_disc_freq.csv"))
+
+## ----time-comparison----------------------------------------------------------
+time_tests <- paste0("test", 1:7)
+time_dir   <- file.path(base, "time_tests")
+
+time_results <- lapply(time_tests, function(tt) {
+  dat_file  <- file.path(time_dir, paste0(tt, ".dat"))
+  stopifnot(file.exists(dat_file))
+
+  r   <- run_r_test("time", dat_file)
+  py  <- read_py_output("time", tt, base)
+
+  hc    <- compare_H(r$crs$s, r$crs$H, py$H)
+  gfc   <- compare_Gfit("time", r$crs$Gfit, py$Gfit)
+
+  # Discrete modes: Python time dmodes = (g, tau, dtau) — 3 columns
+  py_Nopt  <- nrow(py$dmodes)
+  # R modes sorted by tau for comparison
+  r_modes  <- data.frame(tau = r$drs$tau, g = r$drs$g)
+  r_modes  <- r_modes[order(r_modes$tau), ]
+  py_modes <- data.frame(tau = py$dmodes$V2, g = py$dmodes$V1)
+  py_modes <- py_modes[order(py_modes$tau), ]
+
+  # lamC from summary reference
+  lam_ref <- ref_H_time[ref_H_time$test == paste0(tt, ".dat"), ]
+
+  list(
+    test         = tt,
+    tau          = hc$tau,
+    H_R          = hc$H_R,
+    H_PY         = hc$H_PY,
+    lamC_R       = r$crs$lamC,
+    lamC_PY      = if (nrow(lam_ref) > 0) lam_ref$lamC_PY else NA,
+    Nopt_R       = r$drs$Nopt,
+    Nopt_PY_file = py_Nopt,
+    H_rmse       = hc$rmse,
+    H_max_diff   = hc$max_diff,
+    Gfit_rmse    = gfc$rmse,
+    Gfit_rel     = gfc$rel_rmse,
+    r_modes      = r_modes,
+    py_modes     = py_modes
+  )
+})
+
+## ----time-H-table-------------------------------------------------------------
+time_H_tbl <- do.call(rbind, lapply(time_results, function(r)
+  data.frame(
+    test       = r$test,
+    lamC_R     = round(r$lamC_R,  4),
+    lamC_PY    = round(r$lamC_PY, 4),
+    H_rmse     = signif(r$H_rmse,     3),
+    H_max_diff = signif(r$H_max_diff, 3)
+  )))
+time_H_tbl
+
+## ----time-Gfit-table----------------------------------------------------------
+time_Gfit_tbl <- do.call(rbind, lapply(time_results, function(r)
+  data.frame(
+    test        = r$test,
+    Gfit_rmse   = signif(r$Gfit_rmse, 3),
+    Gfit_rel    = signif(r$Gfit_rel,  3)
+  )))
+time_Gfit_tbl
+
+## ----time-modes-table---------------------------------------------------------
+time_modes_tbl <- do.call(rbind, lapply(time_results, function(r)
+  data.frame(
+    test         = r$test,
+    Nopt_R       = r$Nopt_R,
+    Nopt_PY_file = r$Nopt_PY_file
+  )))
+time_modes_tbl
+
+## ----time-modes-detail, results = "asis"--------------------------------------
+for (i in 1:2) {
+  res <- time_results[[i]]
+  tbl <- side_by_side_modes(res$r_modes, res$py_modes)
+  cat(sprintf("\n**%s — Side-by-side discrete modes:**\n\n", res$test))
+  print(knitr::kable(round(tbl, 5), digits = 5,
+                     col.names = c("tau_R", "g_R", "tau_PY", "g_PY")))
+}
+
+## ----time-H-plot, fig.width = 10, fig.height = 5------------------------------
+op <- par(mfrow = c(2, 4), mar = c(3, 3, 2, 1))
+for (res in time_results) {
+  plot(log10(res$tau), res$H_R, type = "l",
+    col = "#1b6ca8", lwd = 2,
+    main = res$test, xlab = "log10(τ)", ylab = "H")
+  lines(log10(res$tau), res$H_PY, col = "#c44e52", lwd = 1, lty = 2)
+  legend("topleft", c("R", "Python"), col = c("#1b6ca8", "#c44e52"),
+         lwd = c(2, 1), lty = c(1, 2), bty = "n", cex = 0.7)
+}
+par(op)
+
+## ----freq-comparison----------------------------------------------------------
+freq_tests <- c("test1", "test1n", "test1u", "test2", "test3",
+                "test4", "test5", "test6", "test7")
+freq_dir   <- file.path(base, "freq_tests")
+
+freq_results <- lapply(freq_tests, function(tt) {
+  dat_file <- file.path(freq_dir, paste0(tt, ".dat"))
+  stopifnot(file.exists(dat_file))
+
+  r  <- run_r_test("frequency", dat_file, plateau = tt %in% plateau_tests)
+  py <- read_py_output("frequency", tt, base)
+
+  hc  <- compare_H(r$crs$s, r$crs$H, py$H)
+  gfc <- compare_Gfit("frequency", r$crs$Gfit, py$Gfit)
+
+  # Discrete modes: Python freq dmodes = (g, tau) — 2 columns
+  py_Nopt  <- nrow(py$dmodes)
+  r_modes  <- data.frame(tau = r$drs$tau, g = r$drs$g)
+  r_modes  <- r_modes[order(r_modes$tau), ]
+  py_modes <- data.frame(tau = py$dmodes$V2, g = py$dmodes$V1)
+  py_modes <- py_modes[order(py_modes$tau), ]
+
+  lam_ref <- ref_H_freq[ref_H_freq$test == paste0(tt, ".dat"), ]
+
+  list(
+    test         = tt,
+    lamC_R       = r$crs$lamC,
+    lamC_PY      = if (nrow(lam_ref) > 0) lam_ref$lamC_PY else NA,
+    Nopt_R       = r$drs$Nopt,
+    Nopt_PY_file = py_Nopt,
+    H_rmse       = hc$rmse,
+    H_max_diff   = hc$max_diff,
+    Gfit_rmse    = gfc$rmse,
+    Gfit_rel     = gfc$rel_rmse,
+    r_modes      = r_modes,
+    py_modes     = py_modes
+  )
+})
+
+## ----freq-H-table-------------------------------------------------------------
+freq_H_tbl <- do.call(rbind, lapply(freq_results, function(r)
+  data.frame(
+    test       = r$test,
+    lamC_R     = round(r$lamC_R,  4),
+    lamC_PY    = round(r$lamC_PY, 4),
+    H_rmse     = signif(r$H_rmse,     3),
+    H_max_diff = signif(r$H_max_diff, 3)
+  )))
+freq_H_tbl
+
+## ----freq-Gfit-table----------------------------------------------------------
+freq_Gfit_tbl <- do.call(rbind, lapply(freq_results, function(r)
+  data.frame(
+    test      = r$test,
+    Gfit_rmse = signif(r$Gfit_rmse, 3),
+    Gfit_rel  = signif(r$Gfit_rel,  3)
+  )))
+freq_Gfit_tbl
+
+## ----freq-modes-table---------------------------------------------------------
+freq_modes_tbl <- do.call(rbind, lapply(freq_results, function(r)
+  data.frame(
+    test         = r$test,
+    Nopt_R       = r$Nopt_R,
+    Nopt_PY_file = r$Nopt_PY_file
+  )))
+freq_modes_tbl
+
+## ----freq-modes-detail, results = "asis"--------------------------------------
+res <- freq_results[[1]]
+tbl <- side_by_side_modes(res$r_modes, res$py_modes)
+cat("\n**test1 (frequency) — Side-by-side discrete modes:**\n\n")
+print(knitr::kable(round(tbl, 5), digits = 5,
+                   col.names = c("tau_R", "g_R", "tau_PY", "g_PY")))
+
+## ----aggregate----------------------------------------------------------------
+agg_time <- data.frame(
+  domain         = "time",
+  mean_H_rmse    = mean(sapply(time_results,  `[[`, "H_rmse")),
+  max_H_rmse     = max(sapply(time_results,   `[[`, "H_rmse")),
+  mean_Gfit_rmse = mean(sapply(time_results,  `[[`, "Gfit_rmse")),
+  mean_Nopt_diff = mean(abs(sapply(time_results,  `[[`, "Nopt_R") -
+                            sapply(time_results,  `[[`, "Nopt_PY_file")))
+)
+agg_freq <- data.frame(
+  domain         = "frequency",
+  mean_H_rmse    = mean(sapply(freq_results,  `[[`, "H_rmse")),
+  max_H_rmse     = max(sapply(freq_results,   `[[`, "H_rmse")),
+  mean_Gfit_rmse = mean(sapply(freq_results,  `[[`, "Gfit_rmse")),
+  mean_Nopt_diff = mean(abs(sapply(freq_results,  `[[`, "Nopt_R") -
+                            sapply(freq_results,  `[[`, "Nopt_PY_file")))
+)
+rbind(agg_time, agg_freq)
+

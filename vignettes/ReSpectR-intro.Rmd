@@ -1,0 +1,263 @@
+---
+title: "Getting Started with ReSpectR"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with ReSpectR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  eval     = TRUE
+)
+
+find_pkg_root <- function() {
+  candidates <- c(".", "..")
+  for (p in candidates) {
+    abs_p <- normalizePath(p, mustWork = FALSE)
+    if (file.exists(file.path(abs_p, "DESCRIPTION")) && dir.exists(file.path(abs_p, "R"))) {
+      return(abs_p)
+    }
+  }
+  NULL
+}
+
+pkg_root <- find_pkg_root()
+if (!is.null(pkg_root) && requireNamespace("pkgload", quietly = TRUE)) {
+  pkgload::load_all(pkg_root, export_all = FALSE, helpers = FALSE, quiet = TRUE)
+} else {
+  library(ReSpectR)
+}
+
+find_extdata_path <- function() {
+  has_required_assets <- function(p) {
+    if (!nzchar(p) || !dir.exists(p)) {
+      return(FALSE)
+    }
+
+    file.exists(file.path(p, "time_tests", "test1.dat")) &&
+      file.exists(file.path(p, "freq_tests", "test1.dat"))
+  }
+
+  pkg_path <- system.file("extdata", package = "ReSpectR")
+  if (has_required_assets(pkg_path)) {
+    return(pkg_path)
+  }
+
+  candidates <- c(
+    file.path("inst", "extdata"),
+    file.path("..", "inst", "extdata"),
+    file.path("..", "..", "inst", "extdata")
+  )
+
+  for (p in candidates) {
+    abs_p <- normalizePath(p, mustWork = FALSE)
+    if (has_required_assets(abs_p)) {
+      return(abs_p)
+    }
+  }
+
+  stop("Could not locate packaged example test data under extdata.", call. = FALSE)
+}
+
+extdata_dir <- find_extdata_path()
+time_file <- file.path(extdata_dir, "time_tests", "test1.dat")
+freq_file <- file.path(extdata_dir, "freq_tests", "test1.dat")
+```
+
+## Overview
+
+**ReSpectR** extracts continuous and discrete relaxation spectra from rheological
+data in either the time domain $G(t)$ or the frequency domain $G^*(\omega)$.
+
+The workflow has three stages:
+
+1. Build a parameter list with `setParams()`
+2. Compute the continuous spectrum $H(\tau)$ with `getContinuousSpectrum()`
+3. Fit discrete Maxwell modes with `getDiscreteSpectrum()`
+
+Results can be written to disk at any stage with `writeSpectrumResults()`.
+
+---
+
+## Input data format
+
+### Time domain  `domain = "time"`
+
+A plain-text file with two or three white-space-separated columns:
+
+```
+#  t       G(t)      [optional weight]
+0.001    1.2e5
+0.01     8.4e4
+...
+```
+
+If only two columns are provided the data are interpolated onto 100
+log-equi-spaced points internally.
+
+### Frequency domain  `domain = "frequency"`
+
+Three or five columns:
+
+```
+#  omega   G'(omega)  G''(omega)  [wt_Gp  wt_Gpp]
+0.1       120.0      45.0
+1.0       480.0     310.0
+...
+```
+
+---
+
+## Time-domain workflow
+
+```{r time-workflow}
+# 1.  Build parameters
+par <- setParams(
+  domain   = "time",
+  dataFile = time_file,
+  ns       = 100L,       # spectral grid points
+  lamC     = 0,          # 0 = automatic (Bayesian L-curve)
+  verbose  = FALSE
+)
+
+# 2.  Continuous spectrum
+crs <- getContinuousSpectrum(par)
+
+class(crs)
+
+# crs$s      — relaxation-time grid  (length ns)
+# crs$H      — log-spectrum H(tau)   (length ns)
+# crs$lamC   — optimal regularisation lambda
+
+# 3.  Discrete Maxwell modes
+drs <- getDiscreteSpectrum(par, crs = crs)
+
+class(drs)
+
+# drs$g      — mode weights
+# drs$tau    — relaxation times
+# drs$Nopt   — number of modes selected by AIC
+
+# 4.  Save to disk
+paths <- writeSpectrumResults(drs, outputDir = file.path(tempdir(), "respect_output_time"))
+```
+
+---
+
+## Frequency-domain workflow
+
+```{r freq-workflow}
+par <- setParams(
+  domain   = "frequency",
+  dataFile = freq_file,
+  ns       = 100L,
+  plateau  = FALSE       # set TRUE to fit a plateau modulus G0
+)
+
+crs <- getContinuousSpectrum(par)
+drs <- getDiscreteSpectrum(par, crs = crs)
+writeSpectrumResults(drs, outputDir = file.path(tempdir(), "respect_output_freq"))
+```
+
+---
+
+## Native plotting
+
+ReSpectR result objects now carry stable classes and can be plotted directly
+with `plot()`.
+
+```{r native-plotting, fig.width=10, fig.height=4.5}
+plot(crs)
+plot(drs)
+```
+
+For continuous spectra, the native plot shows:
+
+1. The recovered continuous spectrum amplitude across relaxation times.
+2. The fitted response against the observed data.
+
+For discrete spectra, the native plot shows:
+
+1. Discrete Maxwell modes overlaid on the continuous envelope.
+2. The discrete-mode reconstruction against the observed data.
+
+---
+
+## Batch processing
+
+`runBatch()` processes a list of files and returns a data frame with one row
+per file.
+
+```{r batch}
+batch_dir <- file.path(tempdir(), "respect_batch_time")
+dir.create(batch_dir, recursive = TRUE, showWarnings = FALSE)
+file.copy(time_file, file.path(batch_dir, "test1.dat"), overwrite = TRUE)
+
+results <- runBatch(
+  domain     = "time",
+  dataDir    = batch_dir,
+  outputRoot = file.path(tempdir(), "respect_batch_output")
+)
+
+# Inspect failures
+results[results$status == "error", c("file", "message")]
+```
+
+Short-form aliases are available for scripting:
+
+```{r aliases}
+par <- setParams(domain = "time", dataFile = time_file, verbose = FALSE)
+crs <- contSpectrum(par)
+drs <- discSpectrum(par, crs = crs)
+writeResults(drs, outputDir = file.path(tempdir(), "respect_alias_output"))
+
+# Batch aliases
+runTimeBatch(dataDir = batch_dir, outputRoot = file.path(tempdir(), "respect_run_time_batch"))
+
+batch_dir_freq <- file.path(tempdir(), "respect_batch_freq")
+dir.create(batch_dir_freq, recursive = TRUE, showWarnings = FALSE)
+file.copy(freq_file, file.path(batch_dir_freq, "test1.dat"), overwrite = TRUE)
+runFrequencyBatch(dataDir = batch_dir_freq, outputRoot = file.path(tempdir(), "respect_run_freq_batch"))
+```
+
+---
+
+## Controlling output
+
+All compute functions default to `writeOutput = FALSE` so they remain
+side-effect free.  Use `writeSpectrumResults()` as the single explicit output
+path:
+
+```{r output-control}
+# No files written during computation
+crs <- getContinuousSpectrum(par, writeOutput = FALSE)
+drs <- getDiscreteSpectrum(par, crs = crs, writeOutput = FALSE)
+
+# Write everything at once
+writeSpectrumResults(c(crs, drs), outputDir = file.path(tempdir(), "respect_output_control"))
+```
+
+---
+
+## Parameter reference
+
+| Parameter | Default | Description |
+|---|---|---|
+| `domain` | `"time"` | `"time"` or `"frequency"` |
+| `dataFile` | `"Gt.dat"` / `"Gst.dat"` | Input file path |
+| `ns` | `100` | Spectral grid points |
+| `lamC` | `0` | Regularisation lambda (0 = auto) |
+| `smFacLam` | `0` | Lambda smoothing shift ∈ [−1, 1] |
+| `freqEnd` | `1` | Spectrum end-condition: 1, 2, or 3 |
+| `plateau` | `FALSE` | Fit plateau modulus G₀ (frequency domain) |
+| `maxNumModes` | `0` | Cap on discrete modes (0 = uncapped) |
+| `deltaBaseWeightDist` | `0.2` | AIC base-weight grid spacing |
+| `minTauSpacing` | `1.25` | Minimum τ ratio between adjacent modes |
+| `lamMin` / `lamMax` | `1e-10` / `1e3` | Lambda scan range |
+| `lamDensity` | `3` | Lambda scan points per decade |
+
+See `?setParams` for full documentation.
