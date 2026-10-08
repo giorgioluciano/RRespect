@@ -24,8 +24,8 @@ getContinuousSpectrum(
 A list with continuous-spectrum results.
 }
 \description{
-Runs the legacy continuous-spectrum solver through a package API.
-During migration this function bridges to domain-specific legacy code.
+Runs a continuous-spectrum solver through the package API.
+The experimental TRF option supports both continuous-spectrum domains.
 }
 \examples{
 \dontrun{

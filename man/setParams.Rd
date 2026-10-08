@@ -15,13 +15,14 @@ setParams(
   plotting = FALSE,
   lamMin = 1e-10,
   lamMax = 1000,
-  lamDensity = 3L,
+  lamDensity = NULL,
   plateau = FALSE,
   maxNumModes = 0L,
   deltaBaseWeightDist = 0.2,
   minTauSpacing = 1.25,
   condWt = 0.5,
-  baseDistWt = 0.5
+  baseDistWt = 0.5,
+  solver = c("experimental", "legacy")
 )
 }
 \arguments{
@@ -45,9 +46,9 @@ setParams(
 
 \item{lamMax}{Numeric. Maximum lambda for scan.}
 
-\item{lamDensity}{Integer >= 2. Points per decade.}
+\item{lamDensity}{Integer >= 2. Points per decade. If NULL, uses 3 for legacy and 2 for experimental.}
 
-\item{plateau}{Logical. Frequency-domain plateau model flag.}
+\item{plateau}{Logical. Infer a plateau modulus in either domain.}
 
 \item{maxNumModes}{Integer >= 0. Hard cap on mode count.}
 
@@ -58,6 +59,10 @@ setParams(
 \item{condWt}{Numeric in [0, 1]. Condition-number weighting.}
 
 \item{baseDistWt}{Numeric in [0, 1]. Base-distance weighting.}
+
+\item{solver}{Solver selection: "experimental" (updated TRF workflow, default) or "legacy".
+Experimental workflows support continuous and discrete spectra in both
+domains. Their numerical compatibility is tested against Python 2.1.}
 }
 \value{
 Named list of validated parameters.

@@ -7,7 +7,7 @@
 \title{ReSpectR: Relaxation Spectrum Extraction in Time and Frequency Domains}
 \description{
 Tools for continuous and discrete relaxation spectrum extraction from
-rheological data in both time-domain G(t) and frequency-domain G*(ω)
+rheological data in both time-domain G(t) and frequency-domain G*(\eqn{\omega})
 formulations.
 }
 \details{
@@ -26,7 +26,7 @@ writeSpectrumResults(drs, outputDir = "output")
 \subsection{Key functions}{\tabular{ll}{
    Function \tab Purpose \cr
    \code{\link[=setParams]{setParams()}} \tab Build a validated parameter list \cr
-   \code{\link[=getContinuousSpectrum]{getContinuousSpectrum()}} \tab Extract continuous H(τ) spectrum \cr
+   \code{\link[=getContinuousSpectrum]{getContinuousSpectrum()}} \tab Extract continuous H(\eqn{\tau}) spectrum \cr
    \code{\link[=getDiscreteSpectrum]{getDiscreteSpectrum()}} \tab Extract discrete Maxwell modes \cr
    \code{plot()} \tab Plot classed spectrum result objects \cr
    \code{\link[=writeSpectrumResults]{writeSpectrumResults()}} \tab Write results to disk \cr
@@ -67,6 +67,11 @@ Package repository: \url{https://github.com/}
 }
 \author{
 \strong{Maintainer}: Giorgio Luciano \email{giorgio.luciano@cnr.it}
+
+Authors:
+\itemize{
+  \item Giorgio Luciano \email{giorgio.luciano@cnr.it}
+}
 
 Other contributors:
 \itemize{

@@ -1,7 +1,7 @@
 #' ReSpectR: Relaxation Spectrum Extraction in Time and Frequency Domains
 #'
 #' Tools for continuous and discrete relaxation spectrum extraction from
-#' rheological data in both time-domain G(t) and frequency-domain G*(ω)
+#' rheological data in both time-domain G(t) and frequency-domain G*(\eqn{\omega})
 #' formulations.
 #'
 #' The algorithm applies Tikhonov regularisation with Bayesian lambda selection
@@ -22,7 +22,7 @@
 #' | Function | Purpose |
 #' |---|---|
 #' | [setParams()] | Build a validated parameter list |
-#' | [getContinuousSpectrum()] | Extract continuous H(τ) spectrum |
+#' | [getContinuousSpectrum()] | Extract continuous H(\eqn{\tau}) spectrum |
 #' | [getDiscreteSpectrum()] | Extract discrete Maxwell modes |
 #' | `plot()` | Plot classed spectrum result objects |
 #' | [writeSpectrumResults()] | Write results to disk |
