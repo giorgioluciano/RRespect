@@ -7,54 +7,51 @@
 \title{ReSpectR: Relaxation Spectrum Extraction in Time and Frequency Domains}
 \description{
 Tools for continuous and discrete relaxation spectrum extraction from
-rheological data in both time-domain G(t) and frequency-domain G*(\eqn{\omega})
-formulations.
+rheological data in the time domain and the frequency domain.
 }
 \details{
-The algorithm applies Tikhonov regularisation with Bayesian lambda selection
-via the L-curve method (continuous spectrum), followed by an AIC-guided
-non-negative least-squares search for discrete Maxwell modes.
+Continuous spectra use Tikhonov regularisation with Bayesian selection of
+the regularisation parameter, or a user-specified fixed value. Bayesian
+selection should not be confused with selection from an L-curve corner.
+The updated default workflow uses trust-region reflective least squares.
+Discrete Maxwell spectra use an AIC-guided non-negative least-squares search,
+nonlinear refinement, pruning and mode merging.
+
+The retained selector \code{solver = "experimental"} identifies the updated
+default workflow. Historical solvers remain available with
+\code{solver = "legacy"}; they do not require the removed prototype directory.
+An optional equilibrium modulus can be fitted in either domain.
 \subsection{Main workflow}{
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{par <- setParams(domain = "time", dataFile = "Gt.dat")
-crs <- getContinuousSpectrum(par)
-drs <- getDiscreteSpectrum(par, crs = crs)
+\preformatted{par <- setParams(domain = "time", dataFile = "Gt.dat")
+crs <- getContinuousSpectrum(par, writeOutput = FALSE)
+drs <- getDiscreteSpectrum(par, crs = crs, writeOutput = FALSE)
 writeSpectrumResults(drs, outputDir = "output")
-}\if{html}{\out{</div>}}
 }
-
-\subsection{Key functions}{\tabular{ll}{
-   Function \tab Purpose \cr
-   \code{\link[=setParams]{setParams()}} \tab Build a validated parameter list \cr
-   \code{\link[=getContinuousSpectrum]{getContinuousSpectrum()}} \tab Extract continuous H(\eqn{\tau}) spectrum \cr
-   \code{\link[=getDiscreteSpectrum]{getDiscreteSpectrum()}} \tab Extract discrete Maxwell modes \cr
-   \code{plot()} \tab Plot classed spectrum result objects \cr
-   \code{\link[=writeSpectrumResults]{writeSpectrumResults()}} \tab Write results to disk \cr
-   \code{\link[=runBatch]{runBatch()}} \tab Process multiple data files \cr
 }
-
-
-Short-form aliases: \code{\link[=contSpectrum]{contSpectrum()}}, \code{\link[=discSpectrum]{discSpectrum()}},
-\code{\link[=writeResults]{writeResults()}}, \code{\link[=runTimeBatch]{runTimeBatch()}}, \code{\link[=runFrequencyBatch]{runFrequencyBatch()}}.
-
-Returned objects carry stable classes
-\code{"respect_continuous_spectrum"} and \code{"respect_discrete_spectrum"}, so they
-can be passed directly to \code{plot()} for built-in visualisation.
-}
-
-\subsection{Vignettes}{
-
-The package includes two vignettes:
+\subsection{Main functions}{
 \itemize{
-\item \code{ReSpectR-intro}: end-to-end usage for time- and frequency-domain workflows
-\item \code{ReSpectR-python-comparison}: direct R-vs-Python comparison using bundled
-reference outputs
+\item \code{\link[=setParams]{setParams()}}: construct a parameter list.
+\item \code{\link[=getContinuousSpectrum]{getContinuousSpectrum()}}: estimate the continuous log-spectrum.
+\item \code{\link[=getDiscreteSpectrum]{getDiscreteSpectrum()}}: estimate discrete Maxwell modes.
+\item \code{\link[=writeSpectrumResults]{writeSpectrumResults()}}: explicitly write results.
+\item \code{\link[=runBatch]{runBatch()}}: process multiple data files.
 }
+Result objects support \code{plot()}. Short-form aliases include
+\code{\link[=contSpectrum]{contSpectrum()}}, \code{\link[=discSpectrum]{discSpectrum()}},
+\code{\link[=writeResults]{writeResults()}}, \code{\link[=runTimeBatch]{runTimeBatch()}}
+and \code{\link[=runFrequencyBatch]{runFrequencyBatch()}}.
+}
+\subsection{Documentation and interpretation}{
+The \code{ReSpectR-intro} vignette introduces the workflows.
+The \code{ReSpectR-python-comparison} vignette illustrates comparison against
+bundled historical Python output; it does not reproduce the separate
+23-configuration validation audit. Use \code{browseVignettes("ReSpectR")}
+when vignettes are installed.
 
-To open them from an installed package:
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{browseVignettes("ReSpectR")
-}\if{html}{\out{</div>}}
+The nominal AIC-selected mode count and the final surviving mode count
+need not be equal. Local uncertainty estimates are not calibrated
+confidence intervals. Agreement between implementations does not establish
+uniqueness of the recovered spectrum or goodness of fit to observations.
 }
 }
 \references{
@@ -63,7 +60,7 @@ continuous spectra from stress relaxation experiments. \emph{Macromolecular
 Theory and Simulations}, 28(6), 1900005.
 }
 \seealso{
-Package repository: \url{https://github.com/}
+Package repository: \url{https://github.com/giorgioluciano/RRespect}
 }
 \author{
 \strong{Maintainer}: Giorgio Luciano \email{giorgio.luciano@cnr.it}
@@ -77,6 +74,5 @@ Other contributors:
 \itemize{
   \item Kristian Hovde Liland \email{kristian.liland@nmbu.no} [contributor]
 }
-
 }
 \keyword{internal}
