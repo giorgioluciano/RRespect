@@ -1,6 +1,14 @@
-ReSpectR conversion TODO
+ReSpectR submission cleanup checklist
 
-- Decide and confirm package license (currently GPL-3).
-- After decision, update DESCRIPTION License field and add the proper LICENSE file/text.
-- Add repository and issue links to DESCRIPTION.
-- Update repository link in ?ReSpectR
+Completed in this documentation update:
+- Added repository and issue links to DESCRIPTION.
+- Added a package README with the validated reference and numerical limitations.
+
+Still pending:
+- Review upstream licences, copyright notices and attribution; retain required notices. DESCRIPTION currently declares GPL-3.
+- Correct the repository link and Bayesian/L-curve wording in package help, keeping roxygen source and generated Rd consistent.
+- Audit references to legacy/ before removing obsolete prototypes, duplicated upstream trees, generated outputs and caches from the working tree. Preserve the v0.5.0 tag and necessary test fixtures.
+- Reconcile branch history without blindly importing historical Python outputs from main.
+- Rerun tests and package checks on the cleaned source; do not carry forward old check results as new results.
+- Identify the final submission revision and update the manuscript code reference if required.
+- Ensure detailed numerical comparison reports are available with the manuscript or an appropriate archive.
