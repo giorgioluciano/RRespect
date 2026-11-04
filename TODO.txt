@@ -4,10 +4,13 @@ Completed in this documentation update:
 - Added repository and issue links to DESCRIPTION.
 - Added a package README with the validated reference and numerical limitations.
 
+- Preserved the upstream MIT notice and the two inline Sachin Shanbhag attributions in inst/COPYRIGHTS.
+- Removed the 437 inventoried historical files under legacy/; retained package solvers and fixtures.
+- Reviewed the supplied reference scan and check of an isolated snapshot without legacy/: 0 errors, 0 warnings, 2 notes. Final-commit checks remain pending.
+
 Still pending:
 - Review upstream licences, copyright notices and attribution; retain required notices. DESCRIPTION currently declares GPL-3.
 - Correct the repository link and Bayesian/L-curve wording in package help, keeping roxygen source and generated Rd consistent.
-- Audit references to legacy/ before removing obsolete prototypes, duplicated upstream trees, generated outputs and caches from the working tree. Preserve the v0.5.0 tag and necessary test fixtures.
 - Reconcile branch history without blindly importing historical Python outputs from main.
 - Rerun tests and package checks on the cleaned source; do not carry forward old check results as new results.
 - Identify the final submission revision and update the manuscript code reference if required.

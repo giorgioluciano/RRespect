@@ -47,7 +47,7 @@ devtools::test()
 devtools::check(cran = TRUE, manual = FALSE)
 ```
 
-Checks must be rerun on the final cleaned source before submission. Historical prototypes under `legacy/` are excluded from package builds by `.Rbuildignore`; they are not the package API and remain under review for repository cleanup.
+Historical prototypes and generated artifacts under `legacy/` have been removed from this branch. They remain available in the historical `v0.5.0` tag. Required package data remain in `inst/extdata`, and the `solver = "legacy"` implementation under `R/` is retained. Upstream notices are preserved in `inst/COPYRIGHTS`. A separate snapshot of commit `fe79ff849ae62b8effe35385545a55d646b7b16e`, with `legacy/` removed, completed R CMD check with 0 errors, 0 warnings and 2 notes (new submission; current time could not be verified). The launching session used R 4.5.2 on Windows 11. This is not a claim that the subsequent final cleanup commit has already passed new checks; final package checks remain required.
 
 ## Licence and support
 
