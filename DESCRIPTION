@@ -30,4 +30,4 @@ Suggests:
     pkgload
 VignetteBuilder: knitr
 Config/testthat/edition: 3
-Config/roxygen2/version: 8.1.0
+RoxygenNote: 7.3.3

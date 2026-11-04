@@ -22,12 +22,14 @@ default workflow. Historical solvers remain available with
 \code{solver = "legacy"}; they do not require the removed prototype directory.
 An optional equilibrium modulus can be fitted in either domain.
 \subsection{Main workflow}{
-\preformatted{par <- setParams(domain = "time", dataFile = "Gt.dat")
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{par <- setParams(domain = "time", dataFile = "Gt.dat")
 crs <- getContinuousSpectrum(par, writeOutput = FALSE)
 drs <- getDiscreteSpectrum(par, crs = crs, writeOutput = FALSE)
 writeSpectrumResults(drs, outputDir = "output")
+}\if{html}{\out{</div>}}
 }
-}
+
 \subsection{Main functions}{
 \itemize{
 \item \code{\link[=setParams]{setParams()}}: construct a parameter list.
@@ -36,12 +38,14 @@ writeSpectrumResults(drs, outputDir = "output")
 \item \code{\link[=writeSpectrumResults]{writeSpectrumResults()}}: explicitly write results.
 \item \code{\link[=runBatch]{runBatch()}}: process multiple data files.
 }
+
 Result objects support \code{plot()}. Short-form aliases include
-\code{\link[=contSpectrum]{contSpectrum()}}, \code{\link[=discSpectrum]{discSpectrum()}},
-\code{\link[=writeResults]{writeResults()}}, \code{\link[=runTimeBatch]{runTimeBatch()}}
+\code{\link[=contSpectrum]{contSpectrum()}}, \code{\link[=discSpectrum]{discSpectrum()}}, \code{\link[=writeResults]{writeResults()}}, \code{\link[=runTimeBatch]{runTimeBatch()}}
 and \code{\link[=runFrequencyBatch]{runFrequencyBatch()}}.
 }
+
 \subsection{Documentation and interpretation}{
+
 The \code{ReSpectR-intro} vignette introduces the workflows.
 The \code{ReSpectR-python-comparison} vignette illustrates comparison against
 bundled historical Python output; it does not reproduce the separate
@@ -65,14 +69,10 @@ Package repository: \url{https://github.com/giorgioluciano/RRespect}
 \author{
 \strong{Maintainer}: Giorgio Luciano \email{giorgio.luciano@cnr.it}
 
-Authors:
-\itemize{
-  \item Giorgio Luciano \email{giorgio.luciano@cnr.it}
-}
-
 Other contributors:
 \itemize{
   \item Kristian Hovde Liland \email{kristian.liland@nmbu.no} [contributor]
 }
+
 }
 \keyword{internal}

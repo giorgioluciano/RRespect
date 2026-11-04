@@ -1,17 +1,17 @@
-ReSpectR submission cleanup checklist
+ReSpectR submission checklist
 
-Completed in this documentation update:
-- Added repository and issue links to DESCRIPTION.
-- Added a package README with the validated reference and numerical limitations.
+Completed source cleanup:
+- Removed the audited legacy tree; preserved package solvers, fixtures and upstream notices.
+- Added repository and issue links to DESCRIPTION and a package README.
+- Corrected Bayesian/L-curve wording and repository link in package help.
+- Updated the comparison vignette to distinguish historical fixtures from the 23-configuration audit.
+- Corrected the introduction's lambda density, plateau scope and nominal/final counts.
+- Removed stale vignette HTML and tangled R files from vignettes/. Rmd sources are canonical; package build regenerates installed vignette outputs.
+- Regenerated Rd documentation from roxygen sources for this candidate.
 
-- Preserved the upstream MIT notice and the two inline Sachin Shanbhag attributions in inst/COPYRIGHTS.
-- Removed the 437 inventoried historical files under legacy/; retained package solvers and fixtures.
-- Reviewed the supplied reference scan and check of an isolated snapshot without legacy/: 0 errors, 0 warnings, 2 notes. Final-commit checks remain pending.
-
-Still pending:
-- Review upstream licences, copyright notices and attribution; retain required notices. DESCRIPTION currently declares GPL-3.
-- Correct the repository link and Bayesian/L-curve wording in package help, keeping roxygen source and generated Rd consistent.
-- Reconcile branch history without blindly importing historical Python outputs from main.
-- Rerun tests and package checks on the cleaned source; do not carry forward old check results as new results.
-- Identify the final submission revision and update the manuscript code reference if required.
-- Ensure detailed numerical comparison reports are available with the manuscript or an appropriate archive.
+Release gates:
+- Inspect the final build/check report and its notes; no earlier check is a substitute.
+- Review all pending documentation diffs before merge.
+- Confirm upstream licensing scope and author/contributor metadata with coauthors.
+- Ensure full numerical audit reports are accessible with the submission or archive.
+- Reconcile branches, identify the submission revision and update the manuscript reference.
