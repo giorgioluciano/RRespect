@@ -120,7 +120,7 @@ par <- setParams(
   domain   = "time",
   dataFile = time_file,
   ns       = 100L,       # spectral grid points
-  lamC     = 0,          # 0 = automatic (Bayesian L-curve)
+  lamC     = 0,          # 0 = automatic Bayesian selection
   verbose  = FALSE
 )
 
@@ -140,7 +140,8 @@ class(drs)
 
 # drs$g      — mode weights
 # drs$tau    — relaxation times
-# drs$Nopt   — number of modes selected by AIC
+# drs$Nopt   — nominal number of modes selected by AIC
+# length(drs$tau) — final surviving mode count after pruning and merging
 
 # 4.  Save to disk
 paths <- writeSpectrumResults(drs, outputDir = file.path(tempdir(), "respect_output_time"))
@@ -228,17 +229,18 @@ runFrequencyBatch(dataDir = batch_dir_freq, outputRoot = file.path(tempdir(), "r
 
 ## Controlling output
 
-All compute functions default to `writeOutput = FALSE` so they remain
-side-effect free.  Use `writeSpectrumResults()` as the single explicit output
-path:
+The spectrum extraction functions default to `writeOutput = FALSE`.
+With plotting disabled, computation does not request result files.
+Use `writeSpectrumResults()` to explicitly write results; batch utilities
+also manage output directories:
 
 ```{r output-control}
 # No files written during computation
 crs <- getContinuousSpectrum(par, writeOutput = FALSE)
 drs <- getDiscreteSpectrum(par, crs = crs, writeOutput = FALSE)
 
-# Write everything at once
-writeSpectrumResults(c(crs, drs), outputDir = file.path(tempdir(), "respect_output_control"))
+# Write the discrete result, which retains its continuous result
+writeSpectrumResults(drs, outputDir = file.path(tempdir(), "respect_output_control"))
 ```
 
 ---
@@ -253,11 +255,30 @@ writeSpectrumResults(c(crs, drs), outputDir = file.path(tempdir(), "respect_outp
 | `lamC` | `0` | Regularisation lambda (0 = auto) |
 | `smFacLam` | `0` | Lambda smoothing shift ∈ [−1, 1] |
 | `freqEnd` | `1` | Spectrum end-condition: 1, 2, or 3 |
-| `plateau` | `FALSE` | Fit plateau modulus G₀ (frequency domain) |
+| `plateau` | `FALSE` | Fit equilibrium modulus G₀ in either domain (updated workflow) |
 | `maxNumModes` | `0` | Cap on discrete modes (0 = uncapped) |
 | `deltaBaseWeightDist` | `0.2` | AIC base-weight grid spacing |
 | `minTauSpacing` | `1.25` | Minimum τ ratio between adjacent modes |
 | `lamMin` / `lamMax` | `1e-10` / `1e3` | Lambda scan range |
-| `lamDensity` | `3` | Lambda scan points per decade |
+| `lamDensity` | `NULL` | Resolves to 2 for the updated workflow, 3 for legacy |
 
 See `?setParams` for full documentation.
+
+## Solver selection and interpretation
+
+The default `solver = "experimental"` selects the updated TRF workflow.
+The name is retained for compatibility; use `solver = "legacy"` only when
+the historical workflow is required. No prototype directory is needed.
+For the updated workflow, automatic regularisation uses Bayesian selection,
+not selection of an L-curve corner.
+
+The stored H values are the natural logarithm of the positive spectrum;
+use `exp(crs$H)` for its amplitude. A fitted mode is not automatically a
+separately identified physical mechanism. The nominal AIC count can differ
+from the final count after pruning and merging.
+
+An equilibrium modulus adds a constant to G(t) and to the storage modulus,
+but not to the loss modulus. Agreement between R and Python predictions
+is distinct from goodness of fit to observations. The historical-output
+comparison vignette is illustrative and does not reproduce the separate
+23-configuration audit described in `VALIDATION-2026-10-07.md`.

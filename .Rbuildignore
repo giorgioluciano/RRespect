@@ -16,3 +16,4 @@
 ^python2-(freq|time)-.*$
 ^time-(error-check|modes|no-plateau-check|plateau-check)-.*$
 ^R/check_trf_parity\.py$
+^\.git$

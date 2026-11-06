@@ -11,6 +11,8 @@ Description: Tools for continuous and discrete relaxation spectrum extraction in
     time-domain and frequency-domain workflows, including utilities for explicit
     output writing and batch progress reporting.
 License: GPL-3
+URL: https://github.com/giorgioluciano/RRespect
+BugReports: https://github.com/giorgioluciano/RRespect/issues
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
@@ -28,4 +30,4 @@ Suggests:
     pkgload
 VignetteBuilder: knitr
 Config/testthat/edition: 3
-Config/roxygen2/version: 8.1.0
+RoxygenNote: 7.3.3
