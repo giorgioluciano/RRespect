@@ -17,3 +17,5 @@
 ^time-(error-check|modes|no-plateau-check|plateau-check)-.*$
 ^R/check_trf_parity\.py$
 ^\.git$
+^pyReSpect-freq-master$
+^pyReSpect-time-master$

@@ -69,6 +69,11 @@ Package repository: \url{https://github.com/giorgioluciano/RRespect}
 \author{
 \strong{Maintainer}: Giorgio Luciano \email{giorgio.luciano@cnr.it}
 
+Authors:
+\itemize{
+  \item Giorgio Luciano \email{giorgio.luciano@cnr.it}
+}
+
 Other contributors:
 \itemize{
   \item Kristian Hovde Liland \email{kristian.liland@nmbu.no} [contributor]
