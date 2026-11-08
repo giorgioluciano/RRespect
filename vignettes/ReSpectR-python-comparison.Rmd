@@ -1,0 +1,157 @@
+---
+title: "ReSpectR and Bundled Historical Python Outputs"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ReSpectR and Bundled Historical Python Outputs}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(ReSpectR)
+base <- system.file("extdata", package = "ReSpectR")
+stopifnot(nzchar(base), dir.exists(base))
+```
+
+## Scope: an illustration, not the full validation audit
+
+This vignette runs the updated R workflow and compares its output with
+historical Python files bundled in `inst/extdata`. It does not execute Python
+and does not establish that these bundled files were generated using the
+fixed Python 2.1 revisions and settings of the separate validation audit.
+Differences may reflect reference settings or versions as well as numerical
+behaviour; the tables below are descriptive, not pass/fail tests.
+
+The documented audit covered 23 configurations, with 20 passing all applicable
+recorded numerical criteria and 22 returning identical final mode counts.
+See the installed `VALIDATION-2026-10-07.md` record for its scope and limitations.
+The 16 examples below do not reproduce that audit or its acceptance thresholds.
+
+The R calculations here explicitly use `solver = "experimental"`, `ns = 100`
+and `lamDensity = 2`. Historical frequency examples enable a plateau for
+test1u and test7, retaining the bundled example configuration. These settings
+are not asserted to match every bundled Python calculation.
+
+## Comparison helpers
+
+H is the natural logarithm of the positive continuous spectrum: h = exp(H).
+An additional column in a spectrum output can contain uncertainty information
+or a placeholder; it is not the imaginary part of H. Only the first two
+columns (relaxation time and log-spectrum) are used here.
+
+Grids are checked numerically rather than assumed identical. For descriptive
+comparisons we interpolate the Python log-spectrum against log relaxation time
+and Python fitted moduli against log time or log angular frequency. Only R
+points within the Python range are compared; no extrapolation is performed.
+This interpolation is for reporting and does not change either fitted spectrum.
+
+```{r helpers}
+read_reference <- function(domain, test) {
+  sub <- if (domain == "time") "py_output_time" else "py_output_freq"
+  directory <- file.path(base, sub, test)
+  read <- function(name) {
+    as.matrix(utils::read.table(file.path(directory, name), comment.char = "#"))
+  }
+  list(H = read("H.dat"), Gfit = read("Gfit.dat"),
+       dmodes = read("dmodes.dat"))
+}
+
+on_common_grid <- function(x_r, x_py, y_py) {
+  stopifnot(length(x_py) == length(y_py), length(x_py) >= 2L,
+            all(is.finite(x_r)), all(x_r > 0),
+            all(is.finite(x_py)), all(x_py > 0),
+            all(is.finite(y_py)), all(diff(x_py) > 0))
+  keep <- x_r >= min(x_py) & x_r <= max(x_py)
+  if (!any(keep)) stop("No overlapping grid points.")
+  list(keep = keep, reference = stats::approx(
+    log(x_py), y_py, xout = log(x_r[keep]), rule = 1
+  )$y)
+}
+
+compare_case <- function(domain, test, plateau = FALSE) {
+  sub <- if (domain == "time") "time_tests" else "freq_tests"
+  par <- setParams(
+    domain = domain, dataFile = file.path(base, sub, paste0(test, ".dat")),
+    solver = "experimental", ns = 100L, lamDensity = 2L,
+    plateau = plateau, verbose = FALSE, plotting = FALSE
+  )
+  crs <- getContinuousSpectrum(par, writeOutput = FALSE)
+  drs <- getDiscreteSpectrum(par, crs = crs, writeOutput = FALSE)
+  py <- read_reference(domain, test)
+  h <- on_common_grid(crs$s, py$H[, 1], py$H[, 2])
+  h_difference <- crs$H[h$keep] - h$reference
+  n_components <- if (domain == "time") 1L else 2L
+  stopifnot(ncol(crs$Gfit) >= n_components + 1L,
+            ncol(py$Gfit) >= n_components + 1L)
+  differences <- references <- numeric()
+  n_common <- integer(n_components)
+  for (j in seq_len(n_components)) {
+    z <- on_common_grid(crs$Gfit[, 1], py$Gfit[, 1], py$Gfit[, j + 1L])
+    differences <- c(differences, crs$Gfit[z$keep, j + 1L] - z$reference)
+    references <- c(references, z$reference)
+    n_common[j] <- sum(z$keep)
+  }
+  stopifnot(all(is.finite(h_difference)), all(is.finite(differences)))
+  relative_rms <- if (all(references != 0)) {
+    sqrt(mean((differences / references)^2))
+  } else NA_real_
+  same_h_grid <- length(crs$s) == nrow(py$H) &&
+    isTRUE(all.equal(as.numeric(crs$s), as.numeric(py$H[, 1]),
+                     tolerance = 1e-5, check.attributes = FALSE))
+  data.frame(
+    domain = domain, test = test, plateau = plateau,
+    N_nominal_R = drs$Nopt, N_final_R = length(drs$tau),
+    N_final_Python_file = nrow(py$dmodes),
+    H_grid_agrees_at_tolerance = same_h_grid,
+    H_points_compared = sum(h$keep), H_points_R = length(crs$s),
+    H_RMSE = sqrt(mean(h_difference^2)),
+    curve_points_per_component = min(n_common),
+    curve_points_R = nrow(crs$Gfit),
+    curve_RMSE = sqrt(mean(differences^2)),
+    curve_relative_RMS_to_Python_fit = relative_rms
+  )
+}
+```
+
+## Time-domain examples
+
+```{r time-comparison}
+time_results <- do.call(rbind, lapply(paste0("test", 1:7), function(test) {
+  compare_case("time", test, plateau = FALSE)
+}))
+knitr::kable(time_results, digits = 6)
+```
+
+## Frequency-domain examples
+
+```{r frequency-comparison}
+frequency_tests <- c("test1", "test1n", "test1u", paste0("test", 2:7))
+frequency_results <- do.call(rbind, lapply(frequency_tests, function(test) {
+  compare_case("frequency", test, plateau = test %in% c("test1u", "test7"))
+}))
+knitr::kable(frequency_results, digits = 6)
+```
+
+## How to interpret these tables
+
+- `N_nominal_R` is the AIC-selected nominal mode count; `N_final_R` counts
+  surviving relaxation times after refinement, pruning and merging.
+- `N_final_Python_file` counts rows in the bundled `dmodes.dat`. It does not
+  recover Python's nominal AIC-selected count. A count difference is not
+  automatically harmless and requires investigation under matched settings.
+- H errors are on the log-spectrum scale and are computed only on the
+  overlapping range. The reported point counts expose excluded points.
+- Curve RMSE pools the time-domain modulus or both frequency-domain moduli.
+  Relative RMS is normalised by the interpolated Python fitted values, not
+  by experimental observations. It is NA if a reference value is zero.
+- Agreement of two reconstructions does not show that either fits the
+  observations well. In particular, a positive relaxation-spectrum model
+  constrains the storage modulus to be non-decreasing with frequency, even
+  when a constant equilibrium modulus is included.
+- These examples do not compare uncertainty estimates, merge counts or every
+  intermediate control in the separate audit. They do not certify numerical
+  equivalence or identify a unique physical spectrum.
+
+For a reproducible cross-implementation claim, retain the source revisions,
+input data, complete settings, comparison thresholds and detailed results.

@@ -1,0 +1,17 @@
+ReSpectR submission checklist
+
+Completed source cleanup:
+- Removed the audited legacy tree; preserved package solvers, fixtures and upstream notices.
+- Added repository and issue links to DESCRIPTION and a package README.
+- Corrected Bayesian/L-curve wording and repository link in package help.
+- Updated the comparison vignette to distinguish historical fixtures from the 23-configuration audit.
+- Corrected the introduction's lambda density, plateau scope and nominal/final counts.
+- Removed stale vignette HTML and tangled R files from vignettes/. Rmd sources are canonical; package build regenerates installed vignette outputs.
+- Regenerated Rd documentation from roxygen sources for this candidate.
+
+Release gates:
+- Inspect the final build/check report and its notes; no earlier check is a substitute.
+- Review all pending documentation diffs before merge.
+- Confirm upstream licensing scope and author/contributor metadata with coauthors.
+- Ensure full numerical audit reports are accessible with the submission or archive.
+- Reconcile branches, identify the submission revision and update the manuscript reference.
